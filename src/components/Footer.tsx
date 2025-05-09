@@ -91,14 +91,14 @@ const Footer = () => {
                 <a href="#" className="text-gray-300 hover:text-white transition-colors">Community</a>
               </li>
               <li>
-                <a href="mailto:support@aiana.ai" className="text-gray-300 hover:text-white transition-colors">support@aiana.ai</a>
+                <a href="mailto:support@aiana.ai" className="text-gray-300 hover:text-white transition-colors">support@BOQ-AI.com</a>
               </li>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-gray-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Aiana. All rights reserved.</p>
+          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} BOQ-AI. All rights reserved.</p>
           <div className="mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors mr-6">Privacy</a>
             <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors mr-6">Terms</a>
