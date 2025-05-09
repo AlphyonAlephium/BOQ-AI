@@ -20,12 +20,13 @@ import {
 } from '@/components/ui/table';
 import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp } from 'lucide-react';
 import { FileUploader } from '@/components/FileUploader';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TechBackground } from '@/components/TechBackground';
+import { DeleteProjectButton } from '@/components/DeleteProjectButton';
 
 type Plan = {
   id: string;
@@ -134,6 +135,27 @@ const Dashboard: React.FC = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+    }
+  };
+
+  const fetchRecentPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('plans')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+        
+      if (error) {
+        console.error('Error fetching plans:', error);
+        return;
+      }
+      
+      setRecentPlans(data || []);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch plans:', error);
+      setIsLoading(false);
     }
   };
 
@@ -265,7 +287,7 @@ const Dashboard: React.FC = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -279,8 +301,13 @@ const Dashboard: React.FC = () => {
                         <TableCell className="font-medium">{plan.name}</TableCell>
                         <TableCell>{formatDate(plan.created_at)}</TableCell>
                         <TableCell>{plan.type}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right flex justify-end">
                           <Button variant="secondary">View</Button>
+                          <DeleteProjectButton 
+                            projectId={plan.id} 
+                            projectName={plan.name} 
+                            onDelete={fetchRecentPlans}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
