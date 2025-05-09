@@ -18,18 +18,18 @@ const HeroSection = () => {
           {/* Hero Text Content */}
           <div className="w-full lg:w-1/2 text-center lg:text-left opacity-0 animate-fade-in">
             <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl mb-6 text-secondary leading-tight">
-              Generate Entire <span className="text-primary">Apps</span> With AI
+              AI-Powered <span className="text-primary">Blueprint</span> Analysis
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0 opacity-0 animate-fade-in-delay-1">
-              Build complete, production-ready web applications with just a conversation. No coding required.
+              Turn building blueprints into accurate cost estimates in minutes instead of days. Save time, reduce errors, and win more bids.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-delay-2">
               <Button size="lg" className="px-8 py-6 text-lg">
-                Get Started
+                Try Free Analysis
               </Button>
               <Button variant="outline" size="lg" className="px-8 py-6 text-lg">
-                Watch Demo
+                Schedule Demo
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -43,7 +43,7 @@ const HeroSection = () => {
                 ))}
               </div>
               <div className="text-sm text-gray-600">
-                <span className="font-bold text-secondary">1,000+</span> apps created this month
+                <span className="font-bold text-secondary">500+</span> contractors trust our estimates
               </div>
             </div>
           </div>
@@ -53,24 +53,24 @@ const HeroSection = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-accent opacity-20 rounded-3xl transform rotate-3"></div>
               <img 
-                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
-                alt="AI App Generation" 
+                src="https://images.unsplash.com/photo-1626885930974-4b69aa21bbf9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
+                alt="Blueprint Analysis" 
                 className="rounded-3xl shadow-2xl w-full z-10 relative transform hover:-translate-y-2 transition-transform duration-300"
               />
               {/* Floating elements */}
               <div className="absolute top-0 -left-5 p-4 bg-white rounded-lg shadow-lg z-20 transform -translate-y-1/4 animate-float">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                  <span className="font-bold text-green-500">10x</span>
+                  <span className="font-bold text-green-500">95%</span>
                 </div>
-                <p className="text-xs text-gray-500">Faster Development</p>
+                <p className="text-xs text-gray-500">Estimation Accuracy</p>
               </div>
               <div className="absolute bottom-0 -right-5 p-4 bg-white rounded-lg shadow-lg z-20 transform translate-y-1/4 animate-float" style={{ animationDelay: '1.5s' }}>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full bg-primary"></div>
-                  <span className="font-bold text-primary">AI</span>
+                  <span className="font-bold text-primary">10x</span>
                 </div>
-                <p className="text-xs text-gray-500">Powered Apps</p>
+                <p className="text-xs text-gray-500">Faster Estimates</p>
               </div>
             </div>
           </div>
