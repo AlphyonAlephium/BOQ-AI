@@ -13,35 +13,35 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    name: "Alex Rivera",
-    role: "Founder",
-    company: "LaunchFast",
+    name: "Robert Martinez",
+    role: "Construction Manager",
+    company: "BuildTech Solutions",
     image: "https://randomuser.me/api/portraits/men/32.jpg",
-    content: "I went from idea to working MVP in just 3 days. What would have taken months and thousands of dollars in development costs was accomplished in a fraction of the time. My investors were blown away.",
+    content: "BOQ-AI reduced our estimation time from 3 days to just 30 minutes per project. The accuracy is impressive - within 98% of our manual calculations. We've increased our bidding capacity by 400% and won 35% more contracts since implementing this tool.",
     rating: 5
   },
   {
-    name: "Sophia Chen",
-    role: "Product Manager",
-    company: "TechNova",
+    name: "Jennifer Chen",
+    role: "Quantity Surveyor",
+    company: "PrecisionBuild",
     image: "https://randomuser.me/api/portraits/women/44.jpg",
-    content: "As a non-technical founder, Aiana has been a game-changer. I can now iterate on product features in real-time based on user feedback without having to wait for developer resources.",
+    content: "As a quantity surveyor with 15 years of experience, I was skeptical about AI tools. BOQ-AI proved me wrong. Its material recognition is extremely accurate, and I can now deliver estimates for complex projects in a single day instead of a week.",
     rating: 5
   },
   {
-    name: "Marcus Johnson",
-    role: "CTO",
-    company: "DataSync",
+    name: "David Thompson",
+    role: "CEO",
+    company: "Apex Construction",
     image: "https://randomuser.me/api/portraits/men/22.jpg",
-    content: "Even as a technical founder, I use Aiana to prototype new features before committing engineering resources. It's saved us countless hours and allowed us to test ideas with users much faster.",
-    rating: 4
+    content: "BOQ-AI has completely revolutionized our bidding process. We're now able to bid on 3x more projects with the same team size. The ROI was evident within just 2 months - the Enterprise plan pays for itself many times over.",
+    rating: 5
   },
   {
-    name: "Emma Wilson",
-    role: "CEO",
-    company: "RetailRevolution",
+    name: "Sarah Patel",
+    role: "Project Director",
+    company: "InnovaBuild",
     image: "https://randomuser.me/api/portraits/women/29.jpg",
-    content: "We've integrated Aiana into our workflow for creating internal tools. What used to take our engineering team weeks now takes a business analyst a couple of hours. The ROI is incredible.",
+    content: "We use BOQ-AI for all our government infrastructure projects now. The detailed breakdown of materials and labor costs has improved our bid accuracy by 40%. Our clients are impressed by the level of detail we provide in such short timeframes.",
     rating: 5
   }
 ];
@@ -105,7 +105,7 @@ const TestimonialsSection = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-16 opacity-0 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Success Stories</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">See how founders and teams are using our AI platform to build applications faster than ever before.</p>
+          <p className="text-gray-600 max-w-2xl mx-auto">See how construction professionals and quantity surveyors are using BOQ-AI to transform blueprint analysis and cost estimation.</p>
         </div>
         
         <div className="relative">
