@@ -73,8 +73,8 @@ const PricingSection = () => {
     },
     {
       title: "Professional",
-      price: xxx,
-      yearlyPrice: xxx,
+      price: 0,
+      yearlyPrice: 0,
       features: [
         "Generate 25 BOQs per month",
         "Advanced elements detection",
@@ -88,8 +88,8 @@ const PricingSection = () => {
     },
     {
       title: "Enterprise",
-      price: xxx,
-      yearlyPrice: xxx,
+      price: 0,
+      yearlyPrice: 0,
       features: [
         "Unlimited BOQ generation",
         "Custom elements library",
