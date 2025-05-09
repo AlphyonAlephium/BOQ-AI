@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -27,6 +26,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TechBackground } from '@/components/TechBackground';
+import { AIScanAnimation } from '@/components/AIScanAnimation';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +56,8 @@ const Dashboard: React.FC = () => {
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -101,54 +103,64 @@ const Dashboard: React.FC = () => {
       return;
     }
     
-    try {
-      // Add the new plan to the database
-      const newPlan = {
-        name: selectedFile.name.split('.')[0],
-        type: 'BoQ',
-        file_url: filePreviewUrl,
-        file_path: filePath
-      };
-      
-      const { data, error } = await supabase
-        .from('plans')
-        .insert([newPlan])
-        .select();
+    // Start the scanning animation
+    setIsGenerating(true);
+    setIsScanning(true);
+    
+    // Simulate processing time
+    setTimeout(async () => {
+      try {
+        // Add the new plan to the database
+        const newPlan = {
+          name: selectedFile.name.split('.')[0],
+          type: 'BoQ',
+          file_url: filePreviewUrl,
+          file_path: filePath
+        };
         
-      if (error) {
+        const { data, error } = await supabase
+          .from('plans')
+          .insert([newPlan])
+          .select();
+          
+        if (error) {
+          toast({
+            title: "Error",
+            description: "Failed to save the project",
+            variant: "destructive",
+          });
+          console.error('Error saving plan:', error);
+          return;
+        }
+        
+        // Refresh the plans list
+        const { data: updatedPlans, error: fetchError } = await supabase
+          .from('plans')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        if (!fetchError && updatedPlans) {
+          setRecentPlans(updatedPlans);
+        }
+        
+        toast({
+          title: "Success!",
+          description: "Bill of quantities generated successfully",
+        });
+        
+      } catch (error) {
+        console.error('Failed to generate BoQ:', error);
         toast({
           title: "Error",
-          description: "Failed to save the project",
+          description: "An unexpected error occurred",
           variant: "destructive",
         });
-        console.error('Error saving plan:', error);
-        return;
+      } finally {
+        setIsGenerating(false);
+        setIsScanning(false);
       }
-      
-      // Refresh the plans list
-      const { data: updatedPlans, error: fetchError } = await supabase
-        .from('plans')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-        
-      if (!fetchError && updatedPlans) {
-        setRecentPlans(updatedPlans);
-      }
-      
-      toast({
-        title: "Success!",
-        description: "Bill of quantities generated successfully",
-      });
-      
-    } catch (error) {
-      console.error('Failed to generate BoQ:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    }
+    }, 3000); // Simulate a 3 second scanning process
   };
 
   const handleDelete = (plan: Plan) => {
@@ -293,19 +305,24 @@ const Dashboard: React.FC = () => {
                 <Button 
                   className="w-full mt-6 bg-gradient-to-r from-[#2f2b3a] via-[#3a2a99] to-[#564f81] hover:opacity-90 text-white py-6"
                   onClick={handleGenerate}
+                  isLoading={isGenerating}
+                  loadingText="Generating..."
                 >
                   GENERATE
                 </Button>
               </Card>
 
               {/* Blueprint Preview */}
-              <Card className="flex justify-center items-center p-6 h-[400px]">
+              <Card className="flex justify-center items-center p-6 h-[400px] relative">
                 {filePreviewUrl ? (
-                  <img 
-                    src={filePreviewUrl} 
-                    alt="Blueprint Preview" 
-                    className="max-w-full max-h-full object-contain"
-                  />
+                  <>
+                    <img 
+                      src={filePreviewUrl} 
+                      alt="Blueprint Preview" 
+                      className="max-w-full max-h-full object-contain"
+                    />
+                    <AIScanAnimation isScanning={isScanning} />
+                  </>
                 ) : (
                   <EmptyImagePlaceholder className="h-full" />
                 )}
