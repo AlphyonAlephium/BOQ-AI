@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
 import { Skeleton } from '@/components/ui/skeleton';
+import TechBackground from '@/components/TechBackground';
 
 type Plan = {
   id: string;
@@ -147,22 +148,23 @@ const Dashboard: React.FC = () => {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-gray-50">
-        {/* Sidebar */}
-        <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-[#2d1d69]">
-          <div className="px-6 py-8">
+        {/* Sidebar with tech background */}
+        <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-transparent relative">
+          <TechBackground className="z-0" />
+          <div className="px-6 py-8 relative z-10">
             <h1 className="text-4xl font-bold text-white">BOQ-AI</h1>
           </div>
-          <SidebarContent className="px-2">
+          <SidebarContent className="px-2 relative z-10">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-[#3d2d79]">
+                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-white/10">
                   <LayoutDashboard />
                   <span>Dashboard</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
+                  className="flex items-center gap-4 text-white hover:bg-white/10"
                   onClick={() => navigate('/projects')}
                 >
                   <FolderKanban />
@@ -171,7 +173,7 @@ const Dashboard: React.FC = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
+                  className="flex items-center gap-4 text-white hover:bg-white/10"
                   onClick={() => navigate('/settings')}
                 >
                   <Settings />
@@ -180,11 +182,11 @@ const Dashboard: React.FC = () => {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="mt-auto mb-6">
+          <SidebarFooter className="mt-auto mb-6 relative z-10">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
+                  className="flex items-center gap-4 text-white hover:bg-white/10"
                   onClick={() => navigate('/')}
                 >
                   <LogOut />
@@ -197,9 +199,10 @@ const Dashboard: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
-          {/* Header */}
-          <header className="bg-[#2d1d69] text-white p-6">
-            <h1 className="text-2xl font-medium">DASHBOARD</h1>
+          {/* Header with tech background */}
+          <header className="relative text-white p-6">
+            <TechBackground className="z-0" />
+            <h1 className="text-2xl font-medium relative z-10">DASHBOARD</h1>
           </header>
 
           {/* Content */}
