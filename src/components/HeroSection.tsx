@@ -1,12 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 const HeroSection = () => {
   const navigate = useNavigate();
-
   return <section id="hero" className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0 overflow-hidden">
@@ -27,11 +24,7 @@ const HeroSection = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-delay-2">
-              <Button 
-                size="lg" 
-                className="px-8 py-6 text-lg"
-                onClick={() => navigate('/dashboard')}
-              >
+              <Button size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/dashboard')}>
                 Go to app
               </Button>
               <Button variant="outline" size="lg" className="px-8 py-6 text-lg">
@@ -59,17 +52,13 @@ const HeroSection = () => {
               <img src="https://images.unsplash.com/photo-1626885930974-4b69aa21bbf9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Blueprint Analysis" className="rounded-3xl shadow-2xl w-full z-10 relative transform hover:-translate-y-2 transition-transform duration-300" />
               {/* BOQ-AI logo overlay in corner */}
               <div className="absolute bottom-4 right-4 w-24 h-24 z-20">
-                <img 
-                  src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" 
-                  alt="BOQ-AI Logo" 
-                  className="w-full h-full object-contain"
-                />
+                <img src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" alt="BOQ-AI Logo" className="w-full h-full object-contain" />
               </div>
               {/* Floating elements */}
               <div className="absolute top-0 -left-5 p-4 bg-white rounded-lg shadow-lg z-20 transform -translate-y-1/4 animate-float">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                  <span className="font-bold text-green-500">95%</span>
+                  <span className="font-bold text-green-500">100%</span>
                 </div>
                 <p className="text-xs text-gray-500">Estimation Accuracy</p>
               </div>
@@ -88,5 +77,4 @@ const HeroSection = () => {
       </div>
     </section>;
 };
-
 export default HeroSection;
