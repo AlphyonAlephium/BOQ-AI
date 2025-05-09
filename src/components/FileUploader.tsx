@@ -4,9 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
+
 interface FileUploaderProps {
-  onFileChange: (file: File | null, fileUrl?: string, filePath?: string) => void;
+  onFileChange: (file: File | null, fileUrl?: string, filePath?: string, fileType?: string) => void;
 }
+
 export const FileUploader: React.FC<FileUploaderProps> = ({
   onFileChange
 }) => {
@@ -15,13 +17,24 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
   };
+
   const handleDragLeave = () => {
     setIsDragging(false);
   };
+
+  const getFileType = (fileName: string): string => {
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    if (extension === 'pdf') return 'pdf';
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) return 'image';
+    if (['dwg', 'dxf'].includes(extension)) return 'blueprint';
+    return 'other';
+  };
+
   const uploadToSupabase = async (selectedFile: File) => {
     setIsUploading(true);
     setUploadProgress(0);
@@ -30,6 +43,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`;
+      const fileType = getFileType(selectedFile.name);
 
       // Simulate upload progress - in a real implementation, this would be replaced with actual progress tracking
       const progressInterval = setInterval(() => {
@@ -71,8 +85,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         }
       } = supabase.storage.from('blueprints').getPublicUrl(filePath);
 
-      // Pass back file information
-      onFileChange(selectedFile, publicUrl, filePath);
+      // Pass back file information including file type
+      onFileChange(selectedFile, publicUrl, filePath, fileType);
       toast({
         title: "Upload Successful",
         description: "Your file has been uploaded."
@@ -92,6 +106,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     }
     setIsUploading(false);
   };
+
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
@@ -101,6 +116,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       await uploadToSupabase(droppedFile);
     }
   };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
@@ -108,10 +124,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       await uploadToSupabase(selectedFile);
     }
   };
+
   const handleClick = () => {
     fileInputRef.current?.click();
   };
-  return <div className="flex flex-col gap-4">
+
+  return (
+    <div className="flex flex-col gap-4">
       <div className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-colors ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'} ${isUploading ? 'opacity-70' : ''}`} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={handleClick}>
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.dwg,.dxf" disabled={isUploading} />
 
@@ -135,5 +154,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           </div>
           <Progress value={uploadProgress} className="h-2" />
         </div>}
-    </div>;
+    </div>
+  );
 };

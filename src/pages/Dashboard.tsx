@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TechBackground } from '@/components/TechBackground';
 import { AIScanAnimation } from '@/components/AIScanAnimation';
 import { ProjectViewer } from '@/components/ProjectViewer';
+import { PDFViewer } from '@/components/PDFViewer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,12 +47,14 @@ type Plan = {
   type: string;
   file_url: string;
   file_path: string;
+  file_type?: string;
 };
 
 const Dashboard: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | undefined>(undefined);
   const [filePath, setFilePath] = useState<string | undefined>(undefined);
+  const [fileType, setFileType] = useState<string | undefined>(undefined);
   const [recentPlans, setRecentPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
@@ -90,10 +93,11 @@ const Dashboard: React.FC = () => {
     fetchRecentPlans();
   }, []);
 
-  const handleFileChange = (file: File | null, fileUrl?: string, path?: string) => {
+  const handleFileChange = (file: File | null, fileUrl?: string, path?: string, type?: string) => {
     setSelectedFile(file);
     setFilePreviewUrl(fileUrl);
     setFilePath(path);
+    setFileType(type);
   };
 
   const handleGenerate = async () => {
@@ -118,7 +122,8 @@ const Dashboard: React.FC = () => {
           name: selectedFile.name.split('.')[0],
           type: 'BoQ',
           file_url: filePreviewUrl,
-          file_path: filePath
+          file_path: filePath,
+          file_type: fileType
         };
         
         const { data, error } = await supabase
@@ -242,6 +247,33 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  // Update the preview rendering in the main content
+  const renderFilePreview = () => {
+    if (!filePreviewUrl) {
+      return <EmptyImagePlaceholder className="h-full" />;
+    }
+    
+    if (fileType === 'pdf') {
+      return (
+        <div className="relative h-full w-full">
+          <PDFViewer fileUrl={filePreviewUrl} className="h-full" />
+          {isScanning && <AIScanAnimation isScanning={isScanning} />}
+        </div>
+      );
+    }
+    
+    return (
+      <>
+        <img 
+          src={filePreviewUrl} 
+          alt="Blueprint Preview" 
+          className="max-w-full max-h-full object-contain"
+        />
+        {isScanning && <AIScanAnimation isScanning={isScanning} />}
+      </>
+    );
+  };
+
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-gray-50">
@@ -326,18 +358,7 @@ const Dashboard: React.FC = () => {
 
               {/* Blueprint Preview */}
               <Card className="flex justify-center items-center p-6 h-[400px] relative">
-                {filePreviewUrl ? (
-                  <>
-                    <img 
-                      src={filePreviewUrl} 
-                      alt="Blueprint Preview" 
-                      className="max-w-full max-h-full object-contain"
-                    />
-                    <AIScanAnimation isScanning={isScanning} />
-                  </>
-                ) : (
-                  <EmptyImagePlaceholder className="h-full" />
-                )}
+                {renderFilePreview()}
               </Card>
             </div>
 
@@ -449,6 +470,7 @@ const Dashboard: React.FC = () => {
           onClose={handleCloseViewer}
           projectName={selectedPlan.name}
           fileUrl={selectedPlan.file_url}
+          fileType={selectedPlan.file_type}
         />
       )}
     </SidebarProvider>

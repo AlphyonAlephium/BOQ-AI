@@ -5,12 +5,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FileText, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AIScanAnimation } from './AIScanAnimation';
+import { PDFViewer } from './PDFViewer';
 
 interface ProjectViewerProps {
   open: boolean;
   onClose: () => void;
   projectName: string;
   fileUrl?: string;
+  fileType?: string;
 }
 
 // Sample Bill of Quantities data
@@ -81,7 +83,8 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
   open, 
   onClose, 
   projectName,
-  fileUrl
+  fileUrl,
+  fileType = 'image'
 }) => {
   const [activeTab, setActiveTab] = useState<'blueprint' | 'boq'>('blueprint');
   const [isGeneratingBoq, setIsGeneratingBoq] = useState(true);
@@ -109,6 +112,20 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
     }, 0);
   }, 0);
   
+  const renderPreviewContent = () => {
+    if (!fileUrl) {
+      return <div className="text-gray-500">No blueprint available</div>;
+    }
+
+    if (fileType === 'pdf') {
+      return <PDFViewer fileUrl={fileUrl} className="h-full" />;
+    }
+
+    return (
+      <img src={fileUrl} alt={projectName} className="max-h-[500px] object-contain" />
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={(open) => {
       if (!open) onClose();
@@ -135,11 +152,7 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
         
         {activeTab === 'blueprint' && (
           <div className="bg-gray-100 rounded-md p-4 flex justify-center items-center min-h-[500px]">
-            {fileUrl ? (
-              <img src={fileUrl} alt={projectName} className="max-h-[500px] object-contain" />
-            ) : (
-              <div className="text-gray-500">No blueprint available</div>
-            )}
+            {renderPreviewContent()}
           </div>
         )}
         
