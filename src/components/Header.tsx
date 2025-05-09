@@ -46,8 +46,12 @@ const Header = () => {
       <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center">
-          <a href="#" onClick={() => scrollToSection('hero')} className="text-2xl font-bold text-secondary-foreground">
-            <span className="text-primary">Aiana</span>
+          <a href="#" onClick={() => scrollToSection('hero')} className="flex items-center">
+            <img 
+              src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" 
+              alt="BOQ-AI Logo" 
+              className="h-10 md:h-12"
+            />
           </a>
         </div>
 
@@ -109,6 +113,13 @@ const Header = () => {
       >
         <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center h-full">
           <div className="flex flex-col items-center gap-8 text-lg">
+            <div className="mb-8">
+              <img 
+                src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" 
+                alt="BOQ-AI Logo" 
+                className="h-12"
+              />
+            </div>
             <a href="#hero" onClick={() => scrollToSection('hero')} className="text-secondary hover:text-primary transition-colors">Home</a>
             <a href="#features" onClick={() => scrollToSection('features')} className="text-secondary hover:text-primary transition-colors">How It Works</a>
             <a href="#pricing" onClick={() => scrollToSection('pricing')} className="text-secondary hover:text-primary transition-colors">Pricing</a>

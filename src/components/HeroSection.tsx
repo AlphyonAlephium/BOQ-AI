@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+
 const HeroSection = () => {
   return <section id="hero" className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden">
       {/* Background elements */}
@@ -41,11 +43,19 @@ const HeroSection = () => {
             </div>
           </div>
           
-          {/* Hero Image */}
+          {/* Hero Image with BOQ-AI logo overlay */}
           <div className="w-full lg:w-1/2 opacity-0 animate-fade-in-delay-2">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-accent opacity-20 rounded-3xl transform rotate-3"></div>
               <img src="https://images.unsplash.com/photo-1626885930974-4b69aa21bbf9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Blueprint Analysis" className="rounded-3xl shadow-2xl w-full z-10 relative transform hover:-translate-y-2 transition-transform duration-300" />
+              {/* BOQ-AI logo overlay in corner */}
+              <div className="absolute bottom-4 right-4 w-24 h-24 z-20">
+                <img 
+                  src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" 
+                  alt="BOQ-AI Logo" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
               {/* Floating elements */}
               <div className="absolute top-0 -left-5 p-4 bg-white rounded-lg shadow-lg z-20 transform -translate-y-1/4 animate-float">
                 <div className="flex items-center gap-2">
@@ -69,4 +79,5 @@ const HeroSection = () => {
       </div>
     </section>;
 };
+
 export default HeroSection;
