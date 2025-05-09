@@ -68,13 +68,13 @@ const PricingSection = () => {
         "Basic building elements detection",
         "Community support",
         "PDF export",
-        "Standard accuracy (85%)"
+        
       ]
     },
     {
       title: "Professional",
-      price: 199,
-      yearlyPrice: 1190,
+      price: xxx,
+      yearlyPrice: xxx,
       features: [
         "Generate 25 BOQs per month",
         "Advanced elements detection",
@@ -82,14 +82,14 @@ const PricingSection = () => {
         "PDF & Excel exports",
         "Custom material pricing",
         "Project comparison tools",
-        "Enhanced accuracy (95%)"
+        
       ],
       isPopular: true
     },
     {
       title: "Enterprise",
-      price: 599,
-      yearlyPrice: 4990,
+      price: xxx,
+      yearlyPrice: xxx,
       features: [
         "Unlimited BOQ generation",
         "Custom elements library",
@@ -98,7 +98,7 @@ const PricingSection = () => {
         "Team collaboration",
         "Advanced analytics",
         "Custom reporting",
-        "Maximum accuracy (99%)"
+        
       ]
     }
   ];
