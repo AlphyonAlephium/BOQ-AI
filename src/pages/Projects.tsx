@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { LayoutDashboard, FolderKanban, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { TechBackground } from '@/components/TechBackground';
 
 const Projects: React.FC = () => {
   const navigate = useNavigate();
@@ -19,59 +20,63 @@ const Projects: React.FC = () => {
     <SidebarProvider>
       <div className="flex h-screen w-full bg-gray-50">
         {/* Sidebar */}
-        <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-[#2d1d69]">
-          <div className="px-6 py-8">
-            <h1 className="text-4xl font-bold text-white">BOQ-AI</h1>
-          </div>
-          <SidebarContent className="px-2">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  <LayoutDashboard />
-                  <span>Dashboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-[#3d2d79] bg-[#3d2d79]">
-                  <FolderKanban />
-                  <span>Projects</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
-                  onClick={() => navigate('/settings')}
-                >
-                  <Settings />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter className="mt-auto mb-6">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
-                  onClick={() => navigate('/')}
-                >
-                  <LogOut />
-                  <span>Logout</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
+        <TechBackground>
+          <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-transparent">
+            <div className="px-6 py-8">
+              <h1 className="text-4xl font-bold text-white">BOQ-AI</h1>
+            </div>
+            <SidebarContent className="px-2">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    className="flex items-center gap-4 text-white hover:bg-white/10"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    <LayoutDashboard />
+                    <span>Dashboard</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-white/10 bg-white/10">
+                    <FolderKanban />
+                    <span>Projects</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    className="flex items-center gap-4 text-white hover:bg-white/10"
+                    onClick={() => navigate('/settings')}
+                  >
+                    <Settings />
+                    <span>Settings</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarContent>
+            <SidebarFooter className="mt-auto mb-6">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    className="flex items-center gap-4 text-white hover:bg-white/10"
+                    onClick={() => navigate('/')}
+                  >
+                    <LogOut />
+                    <span>Logout</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarFooter>
+          </Sidebar>
+        </TechBackground>
 
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
           {/* Header */}
-          <header className="bg-[#2d1d69] text-white p-6">
-            <h1 className="text-2xl font-medium">PROJECTS</h1>
-          </header>
+          <TechBackground>
+            <header className="text-white p-6">
+              <h1 className="text-2xl font-medium">PROJECTS</h1>
+            </header>
+          </TechBackground>
 
           {/* Content */}
           <div className="p-6">
