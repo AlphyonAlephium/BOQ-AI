@@ -36,7 +36,7 @@ const Header = () => {
         {/* Logo */}
         <div className="flex items-center">
           <a href="#" onClick={() => scrollToSection('hero')} className="flex items-center">
-            <img src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" alt="BOQ-AI Logo" className="h-20 md:h-12" />
+            <img src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" alt="BOQ-AI Logo" className="h-20 md:h-20" />
           </a>
         </div>
 
