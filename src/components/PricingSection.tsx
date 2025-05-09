@@ -73,8 +73,8 @@ const PricingSection = () => {
     },
     {
       title: "Professional",
-      price: 149,
-      yearlyPrice: 1490,
+      price: 199,
+      yearlyPrice: 1190,
       features: [
         "Generate 25 BOQs per month",
         "Advanced elements detection",
@@ -88,8 +88,8 @@ const PricingSection = () => {
     },
     {
       title: "Enterprise",
-      price: 399,
-      yearlyPrice: 3990,
+      price: 599,
+      yearlyPrice: 4990,
       features: [
         "Unlimited BOQ generation",
         "Custom elements library",
