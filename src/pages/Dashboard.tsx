@@ -18,7 +18,7 @@ import {
   TableBody, 
   TableCell 
 } from '@/components/ui/table';
-import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp, Trash2 } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp, Trash2, Eye } from 'lucide-react';
 import { FileUploader } from '@/components/FileUploader';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +27,7 @@ import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TechBackground } from '@/components/TechBackground';
 import { AIScanAnimation } from '@/components/AIScanAnimation';
+import { ProjectViewer } from '@/components/ProjectViewer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,6 +59,8 @@ const Dashboard: React.FC = () => {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -222,6 +225,15 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleView = (plan: Plan) => {
+    setSelectedPlan(plan);
+    setIsViewerOpen(true);
+  };
+
+  const handleCloseViewer = () => {
+    setIsViewerOpen(false);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
       month: 'short', 
@@ -370,7 +382,12 @@ const Dashboard: React.FC = () => {
                         <TableCell>{formatDate(plan.created_at)}</TableCell>
                         <TableCell>{plan.type}</TableCell>
                         <TableCell className="text-right flex justify-end gap-2">
-                          <Button variant="secondary">View</Button>
+                          <Button 
+                            variant="secondary"
+                            onClick={() => handleView(plan)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" /> View
+                          </Button>
                           <Button 
                             variant="destructive"
                             onClick={() => handleDelete(plan)}
@@ -424,6 +441,16 @@ const Dashboard: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Project Viewer */}
+      {selectedPlan && (
+        <ProjectViewer
+          open={isViewerOpen}
+          onClose={handleCloseViewer}
+          projectName={selectedPlan.name}
+          fileUrl={selectedPlan.file_url}
+        />
+      )}
     </SidebarProvider>
   );
 };

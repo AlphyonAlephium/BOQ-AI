@@ -35,8 +35,8 @@ export const AIScanAnimation: React.FC<AIScanAnimationProps> = ({ isScanning }) 
 
   return (
     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center z-20 rounded-md">
-      <Scan className="text-primary-500 h-12 w-12 mb-4 animate-pulse" />
-      <div className="text-white font-medium mb-4">AI Scanning Document...</div>
+      <Scan className="text-primary h-12 w-12 mb-4 animate-pulse" />
+      <div className="text-white font-medium mb-4">AI Processing Document...</div>
       <div className="w-3/4 max-w-xs">
         <Progress value={progress} className="h-2 bg-gray-700" />
       </div>
