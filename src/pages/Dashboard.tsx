@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Sidebar, 
@@ -23,34 +22,62 @@ import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp } from 'lucide-
 import { FileUploader } from '@/components/FileUploader';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
+import { Skeleton } from '@/components/ui/skeleton';
 
-type Project = {
+type Plan = {
   id: string;
   name: string;
-  date: string;
+  created_at: string;
   type: string;
-  imageUrl?: string;
+  file_url: string;
+  file_path: string;
 };
 
 const Dashboard: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | undefined>(undefined);
-  const [recentProjects, setRecentProjects] = useState<Project[]>([
-    { id: '1', name: 'Construction Project', date: 'Apr 15, 2024', type: 'BoQ' },
-    { id: '2', name: 'Construction Project', date: 'Apr 10, 2024', type: 'BOF' },
-    { id: '3', name: 'Construction Project', date: 'Apr 3, 2024', type: 'BOF' },
-    { id: '4', name: 'Construction Project', date: 'Mar 25, 2024', type: 'BoQ' },
-  ]);
+  const [filePath, setFilePath] = useState<string | undefined>(undefined);
+  const [recentPlans, setRecentPlans] = useState<Plan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleFileChange = (file: File | null, fileUrl?: string) => {
+  // Fetch recent plans on component mount
+  useEffect(() => {
+    const fetchRecentPlans = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('plans')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        if (error) {
+          console.error('Error fetching plans:', error);
+          return;
+        }
+        
+        setRecentPlans(data || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch plans:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRecentPlans();
+  }, []);
+
+  const handleFileChange = (file: File | null, fileUrl?: string, path?: string) => {
     setSelectedFile(file);
     setFilePreviewUrl(fileUrl);
+    setFilePath(path);
   };
 
-  const handleGenerate = () => {
-    if (!selectedFile) {
+  const handleGenerate = async () => {
+    if (!selectedFile || !filePreviewUrl || !filePath) {
       toast({
         title: "No file selected",
         description: "Please upload a file first",
@@ -59,20 +86,61 @@ const Dashboard: React.FC = () => {
       return;
     }
     
-    // Add the new project to the recent projects list
-    const newProject = {
-      id: Date.now().toString(),
-      name: selectedFile.name.split('.')[0],
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'BoQ',
-      imageUrl: filePreviewUrl
-    };
-    
-    setRecentProjects([newProject, ...recentProjects.slice(0, 4)]);
-    
-    toast({
-      title: "Success!",
-      description: "Bill of quantities generated successfully",
+    try {
+      // Add the new plan to the database
+      const newPlan = {
+        name: selectedFile.name.split('.')[0],
+        type: 'BoQ',
+        file_url: filePreviewUrl,
+        file_path: filePath
+      };
+      
+      const { data, error } = await supabase
+        .from('plans')
+        .insert([newPlan])
+        .select();
+        
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save the project",
+          variant: "destructive",
+        });
+        console.error('Error saving plan:', error);
+        return;
+      }
+      
+      // Refresh the plans list
+      const { data: updatedPlans, error: fetchError } = await supabase
+        .from('plans')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+        
+      if (!fetchError && updatedPlans) {
+        setRecentPlans(updatedPlans);
+      }
+      
+      toast({
+        title: "Success!",
+        description: "Bill of quantities generated successfully",
+      });
+      
+    } catch (error) {
+      console.error('Failed to generate BoQ:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
     });
   };
 
@@ -153,7 +221,7 @@ const Dashboard: React.FC = () => {
               </Card>
 
               {/* Blueprint Preview */}
-              <Card className="flex justify-center items-center p-6">
+              <Card className="flex justify-center items-center p-6 h-[400px]">
                 {filePreviewUrl ? (
                   <img 
                     src={filePreviewUrl} 
@@ -161,11 +229,7 @@ const Dashboard: React.FC = () => {
                     className="max-w-full max-h-full object-contain"
                   />
                 ) : (
-                  <img 
-                    src="/lovable-uploads/d121794b-0db7-4ddc-9a16-61867785792c.png" 
-                    alt="Blueprint Preview" 
-                    className="max-w-full max-h-full object-contain"
-                  />
+                  <EmptyImagePlaceholder className="h-full" />
                 )}
               </Card>
             </div>
@@ -176,44 +240,52 @@ const Dashboard: React.FC = () => {
                 <h2 className="text-2xl font-medium text-gray-800">Recent Projects</h2>
               </div>
               
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead>Preview</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentProjects.map((project) => (
-                    <TableRow key={project.id}>
-                      <TableCell>
-                        {project.imageUrl ? (
-                          <div className="w-12 h-12 rounded-md overflow-hidden">
-                            <img 
-                              src={project.imageUrl} 
-                              alt={project.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
-                            <FileUp size={16} />
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">{project.name}</TableCell>
-                      <TableCell>{project.date}</TableCell>
-                      <TableCell>{project.type}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="secondary">View</Button>
-                      </TableCell>
-                    </TableRow>
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded-md" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                      </div>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+              ) : recentPlans.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead>Preview</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentPlans.map((plan) => (
+                      <TableRow key={plan.id}>
+                        <TableCell>
+                          <div className="w-12 h-12 rounded-md overflow-hidden">
+                            <EmptyImagePlaceholder />
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{plan.name}</TableCell>
+                        <TableCell>{formatDate(plan.created_at)}</TableCell>
+                        <TableCell>{plan.type}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="secondary">View</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No projects yet. Upload a blueprint to get started.</p>
+                </div>
+              )}
             </Card>
           </div>
         </div>
