@@ -247,6 +247,25 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  // Function to render file preview thumbnails for the table
+  const renderThumbnail = (fileUrl: string, fileType?: string) => {
+    if (!fileUrl) {
+      return <EmptyImagePlaceholder />;
+    }
+    
+    if (fileType === 'pdf') {
+      return (
+        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+          <FileUp className="h-6 w-6 text-gray-500" />
+        </div>
+      );
+    }
+    
+    return (
+      <img src={fileUrl} alt="Preview" className="w-12 h-12 rounded-md object-cover" />
+    );
+  };
+
   // Update the preview rendering in the main content
   const renderFilePreview = () => {
     if (!filePreviewUrl) {
@@ -347,7 +366,8 @@ const Dashboard: React.FC = () => {
                 <FileUploader onFileChange={handleFileChange} />
                 
                 <Button 
-                  className="w-full mt-6 bg-gradient-to-r from-[#2f2b3a] via-[#3a2a99] to-[#564f81] hover:opacity-90 text-white py-6"
+                  className="w-full mt-6 text-white py-6"
+                  variant="gradient"
                   onClick={handleGenerate}
                   isLoading={isGenerating}
                   loadingText="Generating..."
@@ -396,7 +416,7 @@ const Dashboard: React.FC = () => {
                       <TableRow key={plan.id}>
                         <TableCell>
                           <div className="w-12 h-12 rounded-md overflow-hidden">
-                            <EmptyImagePlaceholder />
+                            {renderThumbnail(plan.file_url, plan.file_type)}
                           </div>
                         </TableCell>
                         <TableCell className="font-medium">{plan.name}</TableCell>
