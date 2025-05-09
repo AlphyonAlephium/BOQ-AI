@@ -64,41 +64,41 @@ const PricingSection = () => {
       price: 0,
       yearlyPrice: 0,
       features: [
-        "Generate 2 apps per month",
-        "Basic components library",
+        "Generate 2 BOQs per month",
+        "Basic building elements detection",
         "Community support",
-        "App hosting (7 days)",
-        "Export code"
+        "PDF export",
+        "Standard accuracy (85%)"
       ]
     },
     {
-      title: "Pro",
-      price: 79,
-      yearlyPrice: 790,
+      title: "Professional",
+      price: 149,
+      yearlyPrice: 1490,
       features: [
-        "Generate 10 apps per month",
-        "Advanced components library",
+        "Generate 25 BOQs per month",
+        "Advanced elements detection",
         "Priority support",
-        "App hosting (unlimited)",
-        "Custom domains",
-        "Export code & assets",
-        "Collaborative editing"
+        "PDF & Excel exports",
+        "Custom material pricing",
+        "Project comparison tools",
+        "Enhanced accuracy (95%)"
       ],
       isPopular: true
     },
     {
       title: "Enterprise",
-      price: 199,
-      yearlyPrice: 1990,
+      price: 399,
+      yearlyPrice: 3990,
       features: [
-        "Unlimited app generation",
-        "Custom component library",
+        "Unlimited BOQ generation",
+        "Custom elements library",
         "Dedicated support manager",
-        "White labeling",
-        "SSO & team management",
-        "Advanced security features",
-        "Custom integrations",
-        "On-premise deployment"
+        "API integration",
+        "Team collaboration",
+        "Advanced analytics",
+        "Custom reporting",
+        "Maximum accuracy (99%)"
       ]
     }
   ];
@@ -108,7 +108,7 @@ const PricingSection = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-16 opacity-0 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Simple, Transparent Pricing</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Choose the plan that works best for you and your team. All plans include core AI app generation capabilities.</p>
+          <p className="text-gray-600 max-w-2xl mx-auto">Choose the plan that works best for your construction estimation needs. All plans include core AI blueprint analysis capabilities.</p>
           
           {/* Billing Toggle */}
           <div className="mt-8 flex items-center justify-center">
