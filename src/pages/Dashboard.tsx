@@ -21,37 +21,59 @@ import {
 } from '@/components/ui/table';
 import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp } from 'lucide-react';
 import { FileUploader } from '@/components/FileUploader';
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from 'react-router-dom';
 
 type Project = {
   id: string;
   name: string;
   date: string;
   type: string;
+  imageUrl?: string;
 };
 
 const Dashboard: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
-  // Demo projects data
-  const recentProjects: Project[] = [
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | undefined>(undefined);
+  const [recentProjects, setRecentProjects] = useState<Project[]>([
     { id: '1', name: 'Construction Project', date: 'Apr 15, 2024', type: 'BoQ' },
     { id: '2', name: 'Construction Project', date: 'Apr 10, 2024', type: 'BOF' },
     { id: '3', name: 'Construction Project', date: 'Apr 3, 2024', type: 'BOF' },
     { id: '4', name: 'Construction Project', date: 'Mar 25, 2024', type: 'BoQ' },
-  ];
+  ]);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleFileChange = (file: File | null) => {
+  const handleFileChange = (file: File | null, fileUrl?: string) => {
     setSelectedFile(file);
+    setFilePreviewUrl(fileUrl);
   };
 
   const handleGenerate = () => {
     if (!selectedFile) {
-      alert('Please upload a file first');
+      toast({
+        title: "No file selected",
+        description: "Please upload a file first",
+        variant: "destructive",
+      });
       return;
     }
     
-    // Here you would handle the generation of the bill of quantities
-    console.log('Generating bill of quantities for:', selectedFile.name);
+    // Add the new project to the recent projects list
+    const newProject = {
+      id: Date.now().toString(),
+      name: selectedFile.name.split('.')[0],
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'BoQ',
+      imageUrl: filePreviewUrl
+    };
+    
+    setRecentProjects([newProject, ...recentProjects.slice(0, 4)]);
+    
+    toast({
+      title: "Success!",
+      description: "Bill of quantities generated successfully",
+    });
   };
 
   return (
@@ -71,13 +93,19 @@ const Dashboard: React.FC = () => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-[#3d2d79]">
+                <SidebarMenuButton 
+                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
+                  onClick={() => navigate('/projects')}
+                >
                   <FolderKanban />
                   <span>Projects</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-[#3d2d79]">
+                <SidebarMenuButton 
+                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
+                  onClick={() => navigate('/settings')}
+                >
                   <Settings />
                   <span>Settings</span>
                 </SidebarMenuButton>
@@ -87,7 +115,10 @@ const Dashboard: React.FC = () => {
           <SidebarFooter className="mt-auto mb-6">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-[#3d2d79]">
+                <SidebarMenuButton 
+                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
+                  onClick={() => navigate('/')}
+                >
                   <LogOut />
                   <span>Logout</span>
                 </SidebarMenuButton>
@@ -123,11 +154,19 @@ const Dashboard: React.FC = () => {
 
               {/* Blueprint Preview */}
               <Card className="flex justify-center items-center p-6">
-                <img 
-                  src="/lovable-uploads/d121794b-0db7-4ddc-9a16-61867785792c.png" 
-                  alt="Blueprint Preview" 
-                  className="max-w-full max-h-full object-contain"
-                />
+                {filePreviewUrl ? (
+                  <img 
+                    src={filePreviewUrl} 
+                    alt="Blueprint Preview" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <img 
+                    src="/lovable-uploads/d121794b-0db7-4ddc-9a16-61867785792c.png" 
+                    alt="Blueprint Preview" 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
               </Card>
             </div>
 
@@ -140,6 +179,7 @@ const Dashboard: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
+                    <TableHead>Preview</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Type</TableHead>
@@ -149,6 +189,21 @@ const Dashboard: React.FC = () => {
                 <TableBody>
                   {recentProjects.map((project) => (
                     <TableRow key={project.id}>
+                      <TableCell>
+                        {project.imageUrl ? (
+                          <div className="w-12 h-12 rounded-md overflow-hidden">
+                            <img 
+                              src={project.imageUrl} 
+                              alt={project.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                            <FileUp size={16} />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">{project.name}</TableCell>
                       <TableCell>{project.date}</TableCell>
                       <TableCell>{project.type}</TableCell>

@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { FileUp } from 'lucide-react';
 
 interface FileUploaderProps {
-  onFileChange: (file: File | null) => void;
+  onFileChange: (file: File | null, fileUrl?: string) => void;
 }
 
 export const FileUploader: React.FC<FileUploaderProps> = ({ onFileChange }) => {
@@ -27,7 +27,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ onFileChange }) => {
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
       setFile(droppedFile);
-      onFileChange(droppedFile);
+      const fileUrl = URL.createObjectURL(droppedFile);
+      onFileChange(droppedFile, fileUrl);
     }
   };
 
@@ -35,7 +36,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ onFileChange }) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
-      onFileChange(selectedFile);
+      const fileUrl = URL.createObjectURL(selectedFile);
+      onFileChange(selectedFile, fileUrl);
     }
   };
 
