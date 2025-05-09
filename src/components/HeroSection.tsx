@@ -2,8 +2,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return <section id="hero" className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0 overflow-hidden">
@@ -24,7 +27,13 @@ const HeroSection = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-delay-2">
-              <Button size="lg" className="px-8 py-6 text-lg">Go to app</Button>
+              <Button 
+                size="lg" 
+                className="px-8 py-6 text-lg"
+                onClick={() => navigate('/dashboard')}
+              >
+                Go to app
+              </Button>
               <Button variant="outline" size="lg" className="px-8 py-6 text-lg">
                 Schedule Demo
                 <ArrowRight className="ml-2 h-5 w-5" />
