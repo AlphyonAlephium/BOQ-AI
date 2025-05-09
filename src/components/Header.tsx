@@ -65,7 +65,7 @@ const Header = () => {
             onClick={(e) => { e.preventDefault(); scrollToSection('features'); }}
             className="text-secondary hover:text-primary transition-colors"
           >
-            Features
+            How It Works
           </a>
           <a 
             href="#pricing" 
@@ -110,7 +110,7 @@ const Header = () => {
         <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center h-full">
           <div className="flex flex-col items-center gap-8 text-lg">
             <a href="#hero" onClick={() => scrollToSection('hero')} className="text-secondary hover:text-primary transition-colors">Home</a>
-            <a href="#features" onClick={() => scrollToSection('features')} className="text-secondary hover:text-primary transition-colors">Features</a>
+            <a href="#features" onClick={() => scrollToSection('features')} className="text-secondary hover:text-primary transition-colors">How It Works</a>
             <a href="#pricing" onClick={() => scrollToSection('pricing')} className="text-secondary hover:text-primary transition-colors">Pricing</a>
             <a href="#testimonials" onClick={() => scrollToSection('testimonials')} className="text-secondary hover:text-primary transition-colors">Testimonials</a>
             <a href="#faq" onClick={() => scrollToSection('faq')} className="text-secondary hover:text-primary transition-colors">FAQ</a>

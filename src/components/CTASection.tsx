@@ -18,14 +18,14 @@ const CTASection = () => {
       <div className="container mx-auto px-4 md:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-secondary opacity-0 animate-fade-in">
-            Ready to Transform Your Business?
+            Start Building with AI Today
           </h2>
           <p className="text-lg md:text-xl text-gray-700 mb-10 opacity-0 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            Join thousands of businesses already growing with Aiana. Start your 14-day free trial today.
+            Join thousands of founders, teams, and developers creating applications with AI in minutes instead of months.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <Button size="lg" className="px-8 py-6 text-lg">
-              Get Started For Free
+              Generate Your First App
             </Button>
             <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-primary text-primary hover:bg-primary hover:text-white">
               Schedule Demo
@@ -33,7 +33,7 @@ const CTASection = () => {
             </Button>
           </div>
           <p className="mt-6 text-sm text-gray-600 opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            No credit card required. Cancel anytime.
+            No credit card required. Get started for free.
           </p>
         </div>
       </div>

@@ -13,35 +13,35 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    name: "Sarah Johnson",
-    role: "Marketing Director",
-    company: "TechGrowth",
-    image: "https://randomuser.me/api/portraits/women/1.jpg",
-    content: "Aiana has transformed how we approach digital marketing. The analytics tools have given us insights we never had before, leading to a 40% increase in conversion rates within just three months.",
+    name: "Alex Rivera",
+    role: "Founder",
+    company: "LaunchFast",
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    content: "I went from idea to working MVP in just 3 days. What would have taken months and thousands of dollars in development costs was accomplished in a fraction of the time. My investors were blown away.",
     rating: 5
   },
   {
-    name: "Michael Chen",
-    role: "CEO",
-    company: "InnovateX",
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
-    content: "I've tried many platforms before, but Aiana stands out with its intuitive interface and powerful features. The customer support team is exceptional, always ready to help with any issues.",
-    rating: 5
-  },
-  {
-    name: "Emily Rodriguez",
+    name: "Sophia Chen",
     role: "Product Manager",
-    company: "SkyLoop",
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
-    content: "Implementing Aiana was the best decision we made this year. Our team productivity has increased dramatically, and the collaboration tools make working remotely feel seamless.",
+    company: "TechNova",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+    content: "As a non-technical founder, Aiana has been a game-changer. I can now iterate on product features in real-time based on user feedback without having to wait for developer resources.",
+    rating: 5
+  },
+  {
+    name: "Marcus Johnson",
+    role: "CTO",
+    company: "DataSync",
+    image: "https://randomuser.me/api/portraits/men/22.jpg",
+    content: "Even as a technical founder, I use Aiana to prototype new features before committing engineering resources. It's saved us countless hours and allowed us to test ideas with users much faster.",
     rating: 4
   },
   {
-    name: "David Thompson",
-    role: "CTO",
-    company: "FutureTech",
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
-    content: "As a tech company, we have high standards for the tools we use. Aiana exceeded our expectations with its robust API and security features. I highly recommend it to any growing business.",
+    name: "Emma Wilson",
+    role: "CEO",
+    company: "RetailRevolution",
+    image: "https://randomuser.me/api/portraits/women/29.jpg",
+    content: "We've integrated Aiana into our workflow for creating internal tools. What used to take our engineering team weeks now takes a business analyst a couple of hours. The ROI is incredible.",
     rating: 5
   }
 ];
@@ -104,8 +104,8 @@ const TestimonialsSection = () => {
     <section id="testimonials" className="py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-16 opacity-0 animate-fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">What Our Customers Say</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Don't just take our word for it. Here's what people who use Aiana every day have to say.</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Success Stories</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">See how founders and teams are using our AI platform to build applications faster than ever before.</p>
         </div>
         
         <div className="relative">

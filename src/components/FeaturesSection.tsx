@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Zap, BarChart, Lock, Users, Globe } from 'lucide-react';
+import { Zap, BarChart, Lock, Users, Check, Globe } from 'lucide-react';
 
 const FeatureCard = ({ 
   icon: Icon, 
@@ -28,33 +28,33 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: Zap,
-      title: "Lightning Fast",
-      description: "Experience blazing speeds with our optimized platform. No more waiting around."
+      title: "AI App Generation",
+      description: "Generate complete, production-ready web applications with simple text prompts. No coding required."
     },
     {
       icon: BarChart,
-      title: "Advanced Analytics",
-      description: "Gain insights with detailed analytics that help drive your business decisions."
+      title: "Rapid Prototyping",
+      description: "Build and iterate on your ideas in minutes instead of days. Perfect for MVPs and proof of concepts."
     },
     {
-      icon: Lock,
-      title: "Ultra Secure",
-      description: "Rest easy knowing your data is protected with enterprise-grade security."
+      icon: Globe,
+      title: "Multi-platform Support",
+      description: "Create apps that work seamlessly across web, mobile, and desktop from a single codebase."
     },
     {
       icon: Users,
       title: "Team Collaboration",
-      description: "Work seamlessly with your team members in real-time across all devices."
+      description: "Work together on app generation and customization with intuitive sharing and permission controls."
+    },
+    {
+      icon: Lock,
+      title: "Enterprise Security",
+      description: "Bank-grade security for your apps and data with SOC 2 compliance and end-to-end encryption."
     },
     {
       icon: Check,
-      title: "Easy Integration",
-      description: "Connect with your favorite tools without any hassle. We play nice with others."
-    },
-    {
-      icon: Globe,
-      title: "Global Support",
-      description: "Get help whenever you need it with our 24/7 international support team."
+      title: "Ready for Production",
+      description: "Deploy apps to production environments with one click, complete with CI/CD and monitoring."
     }
   ];
 
@@ -62,8 +62,8 @@ const FeaturesSection = () => {
     <section id="features" className="py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-16 opacity-0 animate-fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Powerful Features</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Our platform is packed with features that will help your business grow and succeed in today's competitive market.</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">How It Works</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">Create complete applications with AI. Describe what you want, and our advanced AI will build it for you - faster and easier than traditional development.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

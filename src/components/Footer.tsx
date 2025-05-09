@@ -12,7 +12,7 @@ const Footer = () => {
               <span className="text-primary-300">Aiana</span>
             </h3>
             <p className="text-gray-300 mb-4">
-              Empowering businesses with powerful tools and insights to grow and succeed in today's digital landscape.
+              AI-powered app generation platform. Build complete web applications in minutes without writing code.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-300 hover:text-white transition-colors">
@@ -40,60 +40,63 @@ const Footer = () => {
           
           {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-lg mb-4">Quick Links</h4>
+            <h4 className="font-bold text-lg mb-4">Product</h4>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">Home</a>
-              </li>
-              <li>
-                <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+                <a href="#features" className="text-gray-300 hover:text-white transition-colors">How It Works</a>
               </li>
               <li>
                 <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
               </li>
               <li>
-                <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Testimonials</a>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Use Cases</a>
               </li>
               <li>
-                <a href="#faq" className="text-gray-300 hover:text-white transition-colors">FAQ</a>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Templates</a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">API</a>
               </li>
             </ul>
           </div>
           
           {/* Legal */}
           <div>
-            <h4 className="font-bold text-lg mb-4">Legal</h4>
+            <h4 className="font-bold text-lg mb-4">Company</h4>
             <ul className="space-y-3">
               <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">About Us</a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Careers</a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Blog</a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Legal</a>
+              </li>
+              <li>
                 <a href="#" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">Terms of Service</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">Cookie Policy</a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">GDPR Compliance</a>
               </li>
             </ul>
           </div>
           
           {/* Contact */}
           <div>
-            <h4 className="font-bold text-lg mb-4">Contact</h4>
+            <h4 className="font-bold text-lg mb-4">Support</h4>
             <ul className="space-y-3">
-              <li className="flex items-start">
-                <span className="mr-2">📍</span>
-                <span className="text-gray-300">123 Innovation Street, Tech City, TC 10011</span>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Help Center</a>
               </li>
-              <li className="flex items-start">
-                <span className="mr-2">📧</span>
-                <a href="mailto:info@aiana.com" className="text-gray-300 hover:text-white transition-colors">info@aiana.com</a>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Documentation</a>
               </li>
-              <li className="flex items-start">
-                <span className="mr-2">📱</span>
-                <a href="tel:+1234567890" className="text-gray-300 hover:text-white transition-colors">+1 (234) 567-890</a>
+              <li>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">Community</a>
+              </li>
+              <li>
+                <a href="mailto:support@aiana.ai" className="text-gray-300 hover:text-white transition-colors">support@aiana.ai</a>
               </li>
             </ul>
           </div>

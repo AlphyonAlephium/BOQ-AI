@@ -60,15 +60,15 @@ const PricingSection = () => {
 
   const pricingPlans = [
     {
-      title: "Basic",
-      price: 29,
-      yearlyPrice: 290,
+      title: "Free",
+      price: 0,
+      yearlyPrice: 0,
       features: [
-        "Up to 5 team members",
-        "20GB storage",
-        "Basic analytics",
-        "24/7 support",
-        "API access"
+        "Generate 2 apps per month",
+        "Basic components library",
+        "Community support",
+        "App hosting (7 days)",
+        "Export code"
       ]
     },
     {
@@ -76,30 +76,29 @@ const PricingSection = () => {
       price: 79,
       yearlyPrice: 790,
       features: [
-        "Up to 20 team members",
-        "100GB storage",
-        "Advanced analytics",
-        "24/7 priority support", 
-        "API access",
-        "White labeling",
-        "Custom integrations"
+        "Generate 10 apps per month",
+        "Advanced components library",
+        "Priority support",
+        "App hosting (unlimited)",
+        "Custom domains",
+        "Export code & assets",
+        "Collaborative editing"
       ],
       isPopular: true
     },
     {
       title: "Enterprise",
-      price: 149,
-      yearlyPrice: 1490,
+      price: 199,
+      yearlyPrice: 1990,
       features: [
-        "Unlimited team members",
-        "Unlimited storage",
-        "Premium analytics",
+        "Unlimited app generation",
+        "Custom component library",
         "Dedicated support manager",
-        "API access",
-        "White labeling", 
+        "White labeling",
+        "SSO & team management",
+        "Advanced security features",
         "Custom integrations",
-        "Advanced security",
-        "Training sessions"
+        "On-premise deployment"
       ]
     }
   ];
@@ -109,7 +108,7 @@ const PricingSection = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-16 opacity-0 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Simple, Transparent Pricing</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Choose the plan that works best for you and your team. All plans come with a 14-day money-back guarantee.</p>
+          <p className="text-gray-600 max-w-2xl mx-auto">Choose the plan that works best for you and your team. All plans include core AI app generation capabilities.</p>
           
           {/* Billing Toggle */}
           <div className="mt-8 flex items-center justify-center">
