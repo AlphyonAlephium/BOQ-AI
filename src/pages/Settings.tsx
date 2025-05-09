@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/sidebar';
 import { LayoutDashboard, FolderKanban, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import TechBackground from '@/components/TechBackground';
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
@@ -20,16 +19,15 @@ const Settings: React.FC = () => {
     <SidebarProvider>
       <div className="flex h-screen w-full bg-gray-50">
         {/* Sidebar */}
-        <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-transparent relative">
-          <TechBackground />
-          <div className="px-6 py-8 relative z-10">
+        <Sidebar variant="sidebar" collapsible="offcanvas" className="bg-[#2d1d69]">
+          <div className="px-6 py-8">
             <h1 className="text-4xl font-bold text-white">BOQ-AI</h1>
           </div>
-          <SidebarContent className="px-2 relative z-10">
+          <SidebarContent className="px-2">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-white/10"
+                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
                   onClick={() => navigate('/dashboard')}
                 >
                   <LayoutDashboard />
@@ -38,7 +36,7 @@ const Settings: React.FC = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-white/10"
+                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
                   onClick={() => navigate('/projects')}
                 >
                   <FolderKanban />
@@ -46,18 +44,18 @@ const Settings: React.FC = () => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-white/10 bg-white/20">
+                <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-[#3d2d79] bg-[#3d2d79]">
                   <SettingsIcon />
                   <span>Settings</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="mt-auto mb-6 relative z-10">
+          <SidebarFooter className="mt-auto mb-6">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className="flex items-center gap-4 text-white hover:bg-white/10"
+                  className="flex items-center gap-4 text-white hover:bg-[#3d2d79]"
                   onClick={() => navigate('/')}
                 >
                   <LogOut />
@@ -71,9 +69,8 @@ const Settings: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 overflow-auto">
           {/* Header */}
-          <header className="relative text-white p-6">
-            <TechBackground />
-            <h1 className="text-2xl font-medium relative z-10">SETTINGS</h1>
+          <header className="bg-[#2d1d69] text-white p-6">
+            <h1 className="text-2xl font-medium">SETTINGS</h1>
           </header>
 
           {/* Content */}
