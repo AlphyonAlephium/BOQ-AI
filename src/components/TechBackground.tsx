@@ -14,7 +14,7 @@ export const TechBackground: React.FC<TechBackgroundProps> = ({
     <div 
       className={`relative overflow-hidden ${className}`}
       style={{
-        background: 'linear-gradient(135deg, #221F26 0%, #2d1d69 50%, #403E43 100%)',
+        background: 'linear-gradient(135deg, #2f2b3a 0%, #3a2a99 50%, #564f81 100%)',
       }}
     >
       <div 

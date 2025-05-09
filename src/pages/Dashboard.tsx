@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -18,7 +19,7 @@ import {
   TableBody, 
   TableCell 
 } from '@/components/ui/table';
-import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp, Trash2 } from 'lucide-react';
 import { FileUploader } from '@/components/FileUploader';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
@@ -26,6 +27,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TechBackground } from '@/components/TechBackground';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Plan = {
   id: string;
@@ -42,6 +53,9 @@ const Dashboard: React.FC = () => {
   const [filePath, setFilePath] = useState<string | undefined>(undefined);
   const [recentPlans, setRecentPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -137,6 +151,65 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleDelete = (plan: Plan) => {
+    setPlanToDelete(plan);
+    setIsAlertOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!planToDelete) return;
+    
+    setIsAlertOpen(false);
+    setIsDeletingId(planToDelete.id);
+    
+    try {
+      // Delete the file from storage if it exists
+      if (planToDelete.file_path) {
+        const { error: storageError } = await supabase.storage
+          .from('plans')
+          .remove([planToDelete.file_path]);
+          
+        if (storageError) {
+          console.error('Error removing file from storage:', storageError);
+        }
+      }
+      
+      // Delete the plan from the database
+      const { error } = await supabase
+        .from('plans')
+        .delete()
+        .eq('id', planToDelete.id);
+        
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete the project",
+          variant: "destructive",
+        });
+        console.error('Error deleting plan:', error);
+        return;
+      }
+      
+      // Update the plans list after deletion
+      setRecentPlans(prev => prev.filter(p => p.id !== planToDelete.id));
+      
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      });
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingId(null);
+      setPlanToDelete(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { 
       month: 'short', 
@@ -218,7 +291,7 @@ const Dashboard: React.FC = () => {
                 <FileUploader onFileChange={handleFileChange} />
                 
                 <Button 
-                  className="w-full mt-6 bg-gradient-to-r from-[#221F26] via-[#2d1d69] to-[#403E43] hover:opacity-90 text-white py-6"
+                  className="w-full mt-6 bg-gradient-to-r from-[#2f2b3a] via-[#3a2a99] to-[#564f81] hover:opacity-90 text-white py-6"
                   onClick={handleGenerate}
                 >
                   GENERATE
@@ -265,7 +338,7 @@ const Dashboard: React.FC = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -279,8 +352,28 @@ const Dashboard: React.FC = () => {
                         <TableCell className="font-medium">{plan.name}</TableCell>
                         <TableCell>{formatDate(plan.created_at)}</TableCell>
                         <TableCell>{plan.type}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right flex justify-end gap-2">
                           <Button variant="secondary">View</Button>
+                          <Button 
+                            variant="destructive"
+                            onClick={() => handleDelete(plan)}
+                            disabled={isDeletingId === plan.id}
+                            className="relative"
+                          >
+                            {isDeletingId === plan.id ? (
+                              <span className="flex items-center">
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Deleting...
+                              </span>
+                            ) : (
+                              <>
+                                <Trash2 className="h-4 w-4 mr-1" /> Delete
+                              </>
+                            )}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -295,6 +388,25 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the project
+              and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 };
