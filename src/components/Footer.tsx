@@ -1,19 +1,14 @@
-
 import React from 'react';
-
 const Footer = () => {
-  return (
-    <footer className="bg-secondary text-white">
+  return <footer className="bg-secondary text-white">
       <div className="container mx-auto px-4 md:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
             <h3 className="font-bold text-2xl mb-4">
-              <span className="text-primary-300">Aiana</span>
+              <span className="text-primary-300">BOQ-AI</span>
             </h3>
-            <p className="text-gray-300 mb-4">
-              AI-powered app generation platform. Build complete web applications in minutes without writing code.
-            </p>
+            <p className="text-gray-300 mb-4">Turn building blueprints into accurate cost estimates in minutes instead of days.</p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-300 hover:text-white transition-colors">
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -111,8 +106,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
