@@ -68,13 +68,12 @@ const PricingSection = () => {
         "Basic building elements detection",
         "Community support",
         "PDF export",
-        
       ]
     },
     {
       title: "Professional",
-      price: 0,
-      yearlyPrice: 0,
+      price: 29,
+      yearlyPrice: 290,
       features: [
         "Generate 25 BOQs per month",
         "Advanced elements detection",
@@ -82,14 +81,13 @@ const PricingSection = () => {
         "PDF & Excel exports",
         "Custom material pricing",
         "Project comparison tools",
-        
       ],
       isPopular: true
     },
     {
       title: "Enterprise",
-      price: 0,
-      yearlyPrice: 0,
+      price: 99,
+      yearlyPrice: 990,
       features: [
         "Unlimited BOQ generation",
         "Custom elements library",
@@ -98,13 +96,12 @@ const PricingSection = () => {
         "Team collaboration",
         "Advanced analytics",
         "Custom reporting",
-        
       ]
     }
   ];
 
   return (
-    <section id="pricing" className="py-24">
+    <section id="pricing" className="py-24 bg-gray-50">
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-16 opacity-0 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-secondary">Simple, Transparent Pricing</h2>
