@@ -6,6 +6,8 @@ import { FileText, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AIScanAnimation } from './AIScanAnimation';
 import { PDFViewer } from './PDFViewer';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProjectViewerProps {
   open: boolean;
@@ -88,6 +90,7 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'blueprint' | 'boq'>('blueprint');
   const [isGeneratingBoq, setIsGeneratingBoq] = useState(true);
+  const [outputFormat, setOutputFormat] = useState<string>('nrm');
   
   useEffect(() => {
     if (open && activeTab === 'boq') {
@@ -158,6 +161,25 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
         
         {activeTab === 'boq' && (
           <div className="relative">
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Bill of Quantities</h3>
+                <Select
+                  value={outputFormat}
+                  onValueChange={(value) => setOutputFormat(value)}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nrm">NRM Format</SelectItem>
+                    <SelectItem value="pomi">POMI Format</SelectItem>
+                    <SelectItem value="cessm">CESSM Format</SelectItem>
+                    <SelectItem value="custom">Custom Format</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -207,3 +229,4 @@ export const ProjectViewer: React.FC<ProjectViewerProps> = ({
     </Dialog>
   );
 };
+
