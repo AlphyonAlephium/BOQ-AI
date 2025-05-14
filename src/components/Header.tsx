@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,7 +37,7 @@ const Header = () => {
         {/* Logo */}
         <div className="flex items-center">
           <a href="#" onClick={() => scrollToSection('hero')} className="flex items-center">
-            
+            <span className="text-2xl font-bold text-primary">BOQ-AI</span>
           </a>
         </div>
 
@@ -86,7 +87,7 @@ const Header = () => {
         <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center h-full">
           <div className="flex flex-col items-center gap-8 text-lg">
             <div className="mb-8">
-              <img src="/lovable-uploads/193741c8-3a91-4b1d-ba08-591fcd5783ee.png" alt="BOQ-AI Logo" className="h-12" />
+              <span className="text-3xl font-bold text-primary">BOQ-AI</span>
             </div>
             <a href="#hero" onClick={() => scrollToSection('hero')} className="text-secondary hover:text-primary transition-colors">Home</a>
             <a href="#features" onClick={() => scrollToSection('features')} className="text-secondary hover:text-primary transition-colors">How It Works</a>
