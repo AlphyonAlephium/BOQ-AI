@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -19,16 +20,14 @@ import {
   TableCell 
 } from '@/components/ui/table';
 import { LayoutDashboard, FolderKanban, Settings, LogOut, FileUp, Trash2, Eye } from 'lucide-react';
-import { FileUploader } from '@/components/FileUploader';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { EmptyImagePlaceholder } from '@/components/EmptyImagePlaceholder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TechBackground } from '@/components/TechBackground';
-import { AIScanAnimation } from '@/components/AIScanAnimation';
 import { ProjectViewer } from '@/components/ProjectViewer';
-import { PDFViewer } from '@/components/PDFViewer';
+import { TabInterface } from '@/components/TabInterface';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,20 +47,17 @@ type Plan = {
   file_url: string;
   file_path: string;
   file_type?: string;
+  spec_url?: string;
+  spec_path?: string;
+  spec_type?: string;
 };
 
 const Dashboard: React.FC = () => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [filePreviewUrl, setFilePreviewUrl] = useState<string | undefined>(undefined);
-  const [filePath, setFilePath] = useState<string | undefined>(undefined);
-  const [fileType, setFileType] = useState<string | undefined>(undefined);
   const [recentPlans, setRecentPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const { toast } = useToast();
@@ -93,84 +89,6 @@ const Dashboard: React.FC = () => {
     fetchRecentPlans();
   }, []);
 
-  const handleFileChange = (file: File | null, fileUrl?: string, path?: string, type?: string) => {
-    setSelectedFile(file);
-    setFilePreviewUrl(fileUrl);
-    setFilePath(path);
-    setFileType(type);
-  };
-
-  const handleGenerate = async () => {
-    if (!selectedFile || !filePreviewUrl || !filePath) {
-      toast({
-        title: "No file selected",
-        description: "Please upload a file first",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Start the scanning animation
-    setIsGenerating(true);
-    setIsScanning(true);
-    
-    // Simulate processing time
-    setTimeout(async () => {
-      try {
-        // Add the new plan to the database
-        const newPlan = {
-          name: selectedFile.name.split('.')[0],
-          type: 'BoQ',
-          file_url: filePreviewUrl,
-          file_path: filePath,
-          file_type: fileType
-        };
-        
-        const { data, error } = await supabase
-          .from('plans')
-          .insert([newPlan])
-          .select();
-          
-        if (error) {
-          toast({
-            title: "Error",
-            description: "Failed to save the project",
-            variant: "destructive",
-          });
-          console.error('Error saving plan:', error);
-          return;
-        }
-        
-        // Refresh the plans list
-        const { data: updatedPlans, error: fetchError } = await supabase
-          .from('plans')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5);
-          
-        if (!fetchError && updatedPlans) {
-          setRecentPlans(updatedPlans);
-        }
-        
-        toast({
-          title: "Success!",
-          description: "Bill of quantities generated successfully",
-        });
-        
-      } catch (error) {
-        console.error('Failed to generate BoQ:', error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred",
-          variant: "destructive",
-        });
-      } finally {
-        setIsGenerating(false);
-        setIsScanning(false);
-      }
-    }, 3000); // Simulate a 3 second scanning process
-  };
-
   const handleDelete = (plan: Plan) => {
     setPlanToDelete(plan);
     setIsAlertOpen(true);
@@ -186,11 +104,22 @@ const Dashboard: React.FC = () => {
       // Delete the file from storage if it exists
       if (planToDelete.file_path) {
         const { error: storageError } = await supabase.storage
-          .from('plans')
+          .from('blueprints')
           .remove([planToDelete.file_path]);
           
         if (storageError) {
           console.error('Error removing file from storage:', storageError);
+        }
+      }
+      
+      // Delete the spec file if it exists
+      if (planToDelete.spec_path) {
+        const { error: specStorageError } = await supabase.storage
+          .from('blueprints')
+          .remove([planToDelete.spec_path]);
+          
+        if (specStorageError) {
+          console.error('Error removing specification file from storage:', specStorageError);
         }
       }
       
@@ -266,33 +195,6 @@ const Dashboard: React.FC = () => {
     );
   };
 
-  // Update the preview rendering in the main content
-  const renderFilePreview = () => {
-    if (!filePreviewUrl) {
-      return <EmptyImagePlaceholder className="h-full" />;
-    }
-    
-    if (fileType === 'pdf') {
-      return (
-        <div className="relative h-full w-full">
-          <PDFViewer fileUrl={filePreviewUrl} className="h-full" />
-          {isScanning && <AIScanAnimation isScanning={isScanning} />}
-        </div>
-      );
-    }
-    
-    return (
-      <>
-        <img 
-          src={filePreviewUrl} 
-          alt="Blueprint Preview" 
-          className="max-w-full max-h-full object-contain"
-        />
-        {isScanning && <AIScanAnimation isScanning={isScanning} />}
-      </>
-    );
-  };
-
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-gray-50">
@@ -305,7 +207,7 @@ const Dashboard: React.FC = () => {
             <SidebarContent className="px-2">
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-white/10">
+                  <SidebarMenuButton className="flex items-center gap-4 text-white hover:bg-white/10 bg-white/10">
                     <LayoutDashboard />
                     <span>Dashboard</span>
                   </SidebarMenuButton>
@@ -357,30 +259,10 @@ const Dashboard: React.FC = () => {
 
           {/* Content */}
           <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Upload Card */}
-              <Card className="p-6">
-                <h2 className="text-2xl font-medium text-gray-800 mb-2">Generate Bill of Quantities</h2>
-                <p className="text-gray-600 mb-6">Upload a building plan to start generating a bill of quantities</p>
-                
-                <FileUploader onFileChange={handleFileChange} />
-                
-                <Button 
-                  className="w-full mt-6 text-white py-6"
-                  variant="gradient"
-                  onClick={handleGenerate}
-                  isLoading={isGenerating}
-                  loadingText="Generating..."
-                >
-                  GENERATE
-                </Button>
-              </Card>
-
-              {/* Blueprint Preview */}
-              <Card className="flex justify-center items-center p-6 h-[400px] relative">
-                {renderFilePreview()}
-              </Card>
-            </div>
+            <Card className="p-6">
+              <h2 className="text-2xl font-medium text-gray-800 mb-6">BOQ Generator</h2>
+              <TabInterface />
+            </Card>
 
             {/* Recent Projects Table */}
             <Card className="mt-6 p-6">
