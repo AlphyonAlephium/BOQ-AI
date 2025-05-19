@@ -7,10 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Clipboard, Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { BoqSection } from '@/types/boq';
+import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 interface GenerateBoqTabProps {
   drawingFile: File | null;
+  drawingFileUrl?: string;
   specFile: File | null;
+  specFileUrl?: string;
   isProcessing: boolean;
   isBoqGenerated: boolean;
   generatedBoq: BoqSection[];
