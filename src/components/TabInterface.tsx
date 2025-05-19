@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
@@ -80,11 +79,9 @@ export const TabInterface = () => {
       });
       
       const ocrResult = await processSpecification(specFileUrl, specFile.name);
-      if (!ocrResult.success) {
-        throw new Error(ocrResult.error || "Failed to process specification document");
-      }
+      console.log("OCR Result:", ocrResult);
       
-      setOcrProcessedData(ocrResult.data);
+      setOcrProcessedData(ocrResult);
       
       // Process drawing
       toast({
@@ -93,11 +90,9 @@ export const TabInterface = () => {
       });
       
       const drawingResult = await analyzeDrawing(drawingFileUrl, drawingFile.name);
-      if (!drawingResult.success) {
-        throw new Error(drawingResult.error || "Failed to analyze drawing");
-      }
+      console.log("Drawing Result:", drawingResult);
       
-      setDrawingProcessedData(drawingResult.data);
+      setDrawingProcessedData(drawingResult);
       
       // Generate BOQ
       toast({
@@ -106,51 +101,58 @@ export const TabInterface = () => {
       });
       
       const boqResult = await generateBoq(
-        ocrResult.data,
-        drawingResult.data,
+        ocrResult,
+        drawingResult,
         drawingFile.name.split('.')[0]
       );
       
-      if (!boqResult.success) {
-        throw new Error(boqResult.error || "Failed to generate BOQ");
-      }
+      console.log("BOQ Result:", boqResult);
       
-      setGeneratedBoq(boqResult.boq);
-      setIsBoqGenerated(true);
-      
-      // Save project to database
-      const projectName = drawingFile.name.split('.')[0];
-      
-      const { data, error } = await supabase
-        .from('plans')
-        .insert([
-          {
-            name: projectName,
-            type: 'BoQ',
-            file_url: drawingFileUrl,
-            file_path: drawingFilePath,
-            file_type: drawingFileType,
-            spec_url: specFileUrl,
-            spec_path: specFilePath,
-            spec_type: specFileType
-          }
-        ])
-        .select();
+      // Check if the boqResult contains a boq property
+      if (boqResult && boqResult.boq) {
+        setGeneratedBoq(boqResult.boq);
+        setIsBoqGenerated(true);
         
-      if (error) {
-        console.error('Error saving project:', error);
+        // Save project to database
+        const projectName = drawingFile.name.split('.')[0];
+        
+        const { data, error } = await supabase
+          .from('plans')
+          .insert([
+            {
+              name: projectName,
+              type: 'BoQ',
+              file_url: drawingFileUrl,
+              file_path: drawingFilePath,
+              file_type: drawingFileType,
+              spec_url: specFileUrl,
+              spec_path: specFilePath,
+              spec_type: specFileType
+            }
+          ])
+          .select();
+          
+        if (error) {
+          console.error('Error saving project:', error);
+          toast({
+            title: "Warning",
+            description: "BOQ generated successfully, but failed to save the project",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success!",
+            description: "Bill of quantities generated successfully",
+          });
+        }
+      } else {
+        console.error('Invalid BOQ result format:', boqResult);
         toast({
-          title: "Warning",
-          description: "BOQ generated successfully, but failed to save the project",
+          title: "Error",
+          description: "Failed to generate BOQ: Invalid response format",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Success!",
-          description: "Bill of quantities generated successfully",
-        });
       }
-      
     } catch (error) {
       console.error('Failed to generate BoQ:', error);
       toast({

@@ -34,10 +34,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
       console.log("OpenAI API key not configured, using fallback data");
-      return new Response(JSON.stringify({ 
-        success: true,
-        data: getFallbackOcrData(fileName)
-      }), {
+      return new Response(JSON.stringify(getFallbackOcrData(fileName)), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -98,10 +95,7 @@ serve(async (req) => {
         // Check for quota exceeded error
         if (errorText.includes("insufficient_quota") || openaiResponse.status === 429) {
           console.log("OpenAI quota exceeded, using fallback data");
-          return new Response(JSON.stringify({ 
-            success: true,
-            data: getFallbackOcrData(fileName)
-          }), {
+          return new Response(JSON.stringify(getFallbackOcrData(fileName)), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
         }
@@ -132,10 +126,7 @@ serve(async (req) => {
       
       console.log("OCR processing completed successfully");
       
-      return new Response(JSON.stringify({ 
-        success: true,
-        data: extractedData 
-      }), {
+      return new Response(JSON.stringify(extractedData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
       
@@ -144,20 +135,14 @@ serve(async (req) => {
       console.log("Using fallback data due to OpenAI error");
       
       // Return fallback data if OpenAI fails
-      return new Response(JSON.stringify({ 
-        success: true,
-        data: getFallbackOcrData(fileName)
-      }), {
+      return new Response(JSON.stringify(getFallbackOcrData(fileName)), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
   } catch (error) {
     console.error("OCR processing error:", error);
     
-    return new Response(JSON.stringify({ 
-      success: false,
-      error: error.message 
-    }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

@@ -20,17 +20,21 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
       throw new Error(`OCR processing failed: ${error.message}`);
     }
     
-    if (data && !data.success) {
-      console.error('OCR processing failed:', data.error);
+    // The response structure has changed, we need to handle it properly
+    console.log("OCR processing response:", data);
+    
+    if (!data) {
+      console.error('OCR processing failed: No data returned');
       toast({
         title: "OCR Processing Failed",
-        description: data.error || "Failed to extract text from document",
+        description: "No data returned from OCR processing",
         variant: "destructive"
       });
-      throw new Error(`OCR processing failed: ${data.error}`);
+      throw new Error("OCR processing failed: No data returned");
     }
     
-    return data.data;
+    // Return the data directly without checking for success property
+    return data;
   } catch (error) {
     console.error('Error in processSpecification:', error);
     throw error;
@@ -55,17 +59,21 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
       throw new Error(`Drawing analysis failed: ${error.message}`);
     }
     
-    if (data && !data.success) {
-      console.error('Drawing analysis failed:', data.error);
+    // Log the response for debugging
+    console.log("Drawing analysis response:", data);
+    
+    if (!data) {
+      console.error('Drawing analysis failed: No data returned');
       toast({
         title: "Drawing Analysis Failed",
-        description: data.error || "Failed to analyze drawing",
+        description: "No data returned from drawing analysis",
         variant: "destructive"
       });
-      throw new Error(`Drawing analysis failed: ${data.error}`);
+      throw new Error("Drawing analysis failed: No data returned");
     }
     
-    return data.data;
+    // Return the data directly without checking for success property
+    return data;
   } catch (error) {
     console.error('Error in analyzeDrawing:', error);
     throw error;
@@ -76,6 +84,9 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
 export const generateBoq = async (ocrData: any, drawingData: any, projectName: string) => {
   try {
     console.log("Generating BOQ for project:", projectName);
+    console.log("OCR Data:", ocrData);
+    console.log("Drawing Data:", drawingData);
+    
     const { data, error } = await supabase.functions.invoke('generate-boq', {
       body: { ocrData, drawingData, projectName }
     });
@@ -90,14 +101,17 @@ export const generateBoq = async (ocrData: any, drawingData: any, projectName: s
       throw new Error(`BOQ generation failed: ${error.message}`);
     }
     
-    if (data && !data.success) {
-      console.error('BOQ generation failed:', data.error);
+    // Log the response for debugging
+    console.log("BOQ generation response:", data);
+    
+    if (!data) {
+      console.error('BOQ generation failed: No data returned');
       toast({
         title: "BOQ Generation Failed",
-        description: data.error || "Failed to generate BOQ",
+        description: "No data returned from BOQ generation",
         variant: "destructive"
       });
-      throw new Error(`BOQ generation failed: ${data.error}`);
+      throw new Error("BOQ generation failed: No data returned");
     }
     
     return data;
