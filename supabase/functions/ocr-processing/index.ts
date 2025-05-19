@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
@@ -31,10 +30,10 @@ serve(async (req) => {
     // Get the file data as blob
     const fileBlob = await fileResponse.blob();
     
-    // Connect to Google Cloud Vision API for OCR processing
-    const apiKey = Deno.env.get('GOOGLE_CLOUD_API_KEY');
+    // Use OpenAI for OCR instead of Google Cloud Vision due to referrer restrictions
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
-      throw new Error('Google Cloud API key not configured');
+      throw new Error('OpenAI API key not configured');
     }
     
     // Convert blob to base64
@@ -46,52 +45,71 @@ serve(async (req) => {
       )
     );
     
-    // Prepare request for Google Cloud Vision API
-    const visionApiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+    // Prepare request for OpenAI Vision API
+    console.log("Sending request to OpenAI Vision API for OCR");
+    const openaiApiUrl = 'https://api.openai.com/v1/chat/completions';
     const requestBody = {
-      requests: [
+      model: "gpt-4o",
+      messages: [
         {
-          image: {
-            content: base64File
-          },
-          features: [
+          role: "system",
+          content: "You are an expert in OCR processing. Extract all text from the provided document, including materials specifications, standards references, and technical details. Format detected tables accurately."
+        },
+        {
+          role: "user",
+          content: [
             {
-              type: "DOCUMENT_TEXT_DETECTION",
-              maxResults: 50
+              type: "text",
+              text: "Extract all text from this specification document. Identify materials, standards, and specifications. Return a structured response with all detected information."
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64File}`
+              }
             }
           ]
         }
-      ]
+      ],
+      response_format: { type: "json_object" }
     };
     
-    // Make request to Google Cloud Vision
-    console.log("Sending request to Google Cloud Vision API");
-    const visionResponse = await fetch(visionApiUrl, {
+    // Make request to OpenAI
+    const openaiResponse = await fetch(openaiApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify(requestBody)
     });
     
-    if (!visionResponse.ok) {
-      const errorText = await visionResponse.text();
-      console.error("Vision API error response:", errorText);
-      throw new Error(`Google Cloud Vision API error: ${visionResponse.status} ${visionResponse.statusText}`);
+    if (!openaiResponse.ok) {
+      const errorText = await openaiResponse.text();
+      console.error("OpenAI API error response:", errorText);
+      throw new Error(`OpenAI API error: ${openaiResponse.status} ${openaiResponse.statusText}`);
     }
     
-    const visionResult = await visionResponse.json();
+    const openaiResult = await openaiResponse.json();
     
-    if (!visionResult.responses || visionResult.responses.length === 0) {
+    if (!openaiResult.choices || openaiResult.choices.length === 0) {
       throw new Error('No text detected in the document');
     }
     
-    const detectedText = visionResult.responses[0].fullTextAnnotation?.text || '';
-    console.log("OCR text extracted successfully, length:", detectedText.length);
+    // Parse the OpenAI response which should be in JSON format
+    let extractedText;
+    try {
+      const resultContent = openaiResult.choices[0].message.content;
+      extractedText = JSON.parse(resultContent);
+    } catch (parseError) {
+      console.error("Error parsing OpenAI response:", parseError);
+      throw new Error('Failed to parse OCR results');
+    }
+    
+    console.log("OCR text extracted successfully");
     
     // Process the extracted text to identify materials, standards and specifications
-    // This section parses the raw OCR text into structured data
-    const extractedData = processExtractedText(detectedText);
+    const extractedData = processExtractedText(extractedText);
     
     console.log("OCR processing completed successfully");
     
@@ -116,98 +134,104 @@ serve(async (req) => {
 });
 
 // Function to process and structure the extracted OCR text
-function processExtractedText(text: string) {
-  // Implementing simple pattern matching for construction document processing
-  // In a production environment, this would be more sophisticated with NLP or ML
-  
-  const materials: Array<{name: string; grade: string; description: string}> = [];
-  const standards: Array<{code: string; description: string}> = [];
-  const specifications: {[key: string]: string} = {};
-  
-  // Extract materials (looking for patterns like "Material: X, Grade: Y")
-  const materialMatches = text.match(/(?:Material|Materials):\s*(.*?)(?:\n|$)/gi) || [];
-  materialMatches.forEach(match => {
-    const materialName = match.replace(/(?:Material|Materials):\s*/i, '').trim();
-    const gradeMatch = text.match(new RegExp(`${materialName}.*?Grade:\\s*(.*?)(?:\\n|$)`, 'i'));
-    const descMatch = text.match(new RegExp(`${materialName}.*?Description:\\s*(.*?)(?:\\n|$)`, 'i'));
-    
-    materials.push({
-      name: materialName,
-      grade: gradeMatch ? gradeMatch[1].trim() : '',
-      description: descMatch ? descMatch[1].trim() : ''
-    });
-  });
-  
-  // Add default materials if none found (for fallback)
-  if (materials.length === 0) {
-    if (text.includes('concrete') || text.includes('Concrete')) {
-      materials.push({ name: "Concrete", grade: text.includes('M25') ? 'M25' : 'Standard', description: "Ready mix concrete" });
-    }
-    if (text.includes('steel') || text.includes('Steel')) {
-      materials.push({ name: "Steel", grade: text.includes('Fe500') ? 'Fe500' : 'Standard', description: "Reinforcement steel" });
-    }
-    if (text.includes('brick') || text.includes('Brick')) {
-      materials.push({ name: "Bricks", grade: "Class A", description: "Clay bricks for masonry work" });
-    }
+function processExtractedText(extractedData: any) {
+  // If OpenAI already returned structured data in our format, use it directly
+  if (extractedData.materials && extractedData.standards && extractedData.specifications) {
+    return extractedData;
   }
   
-  // Extract standards (looking for codes like "IS 456:2000" or "ASTM")
-  const standardMatches = text.match(/(?:IS|ASTM|BS|EN)\s*\d+(?:[-:]\d+)?/g) || [];
-  standardMatches.forEach(code => {
-    // Try to find a description following the standard code
-    const descMatch = text.match(new RegExp(`${code}\\s*[-–—]\\s*(.*?)(?:\\.|\\n|$)`));
-    standards.push({
-      code: code.trim(),
-      description: descMatch ? descMatch[1].trim() : "Construction standard"
-    });
-  });
-  
-  // Add default standards if none found (for fallback)
-  if (standards.length === 0) {
-    if (text.includes('concrete') || text.includes('Concrete')) {
-      standards.push({ code: "IS 456:2000", description: "Plain and reinforced concrete - Code of practice" });
-    }
-    if (text.includes('steel') || text.includes('Steel')) {
-      standards.push({ code: "IS 800:2007", description: "General construction in steel - Code of practice" });
-    }
-  }
-  
-  // Extract specifications for different building elements
-  const specSections = [
-    { key: 'foundation', patterns: ['foundation', 'Foundation', 'footing', 'Footing'] },
-    { key: 'walls', patterns: ['wall', 'Wall', 'masonry', 'Masonry'] },
-    { key: 'flooring', patterns: ['floor', 'Floor', 'Flooring', 'flooring'] },
-    { key: 'roofing', patterns: ['roof', 'Roof', 'ceiling', 'Ceiling'] }
-  ];
-  
-  specSections.forEach(section => {
-    for (const pattern of section.patterns) {
-      const matches = text.match(new RegExp(`${pattern}.*?(?:\\.|\\n)`, 'g'));
-      if (matches && matches.length > 0) {
-        // Use the longest match as it likely has more details
-        const bestMatch = matches.reduce((a, b) => a.length > b.length ? a : b);
-        specifications[section.key] = bestMatch.trim();
-        break;
-      }
-    }
-    
-    // If no match found for this section, add a placeholder based on text context
-    if (!specifications[section.key]) {
-      if (section.key === 'foundation' && (text.includes('RCC') || text.includes('concrete'))) {
-        specifications[section.key] = "RCC foundation with concrete";
-      } else if (section.key === 'walls' && text.includes('brick')) {
-        specifications[section.key] = "Brick masonry walls with cement mortar";
-      } else if (section.key === 'flooring' && text.includes('tile')) {
-        specifications[section.key] = "Tiled flooring";
-      } else if (section.key === 'roofing' && text.includes('RCC')) {
-        specifications[section.key] = "RCC slab roofing";
-      }
-    }
-  });
-  
-  return {
-    materials,
-    standards,
-    specifications
+  // Otherwise, create a default structure and populate from the text
+  const result = {
+    materials: [] as Array<{name: string; grade: string; description: string}>,
+    standards: [] as Array<{code: string; description: string}>,
+    specifications: {} as {[key: string]: string}
   };
+  
+  // Extract materials if present in the OpenAI response
+  if (extractedData.materials || extractedData.material_list) {
+    const materialsList = extractedData.materials || extractedData.material_list || [];
+    result.materials = Array.isArray(materialsList) ? materialsList.map((material: any) => {
+      return {
+        name: material.name || material.type || "Unknown Material",
+        grade: material.grade || material.quality || "",
+        description: material.description || material.details || ""
+      };
+    }) : [];
+  }
+  
+  // Extract standards if present
+  if (extractedData.standards || extractedData.codes) {
+    const standardsList = extractedData.standards || extractedData.codes || [];
+    result.standards = Array.isArray(standardsList) ? standardsList.map((standard: any) => {
+      return {
+        code: standard.code || standard.number || "Unknown Standard",
+        description: standard.description || standard.details || ""
+      };
+    }) : [];
+  }
+  
+  // Extract specifications if present
+  if (extractedData.specifications || extractedData.specs) {
+    const specs = extractedData.specifications || extractedData.specs || {};
+    
+    // Handle both object and array formats
+    if (Array.isArray(specs)) {
+      specs.forEach((spec: any) => {
+        if (spec.key && spec.value) {
+          result.specifications[spec.key] = spec.value;
+        }
+      });
+    } else {
+      // It's an object, copy properties
+      result.specifications = { ...specs };
+    }
+  }
+  
+  // Add some default specifications sections if missing
+  const defaultSections = ['foundation', 'walls', 'flooring', 'roofing'];
+  defaultSections.forEach(section => {
+    if (!result.specifications[section]) {
+      // Try to find content related to this section in the raw text
+      const sectionContent = findSectionContent(extractedData, section);
+      if (sectionContent) {
+        result.specifications[section] = sectionContent;
+      }
+    }
+  });
+  
+  return result;
+}
+
+// Helper function to find content related to specific sections in raw text
+function findSectionContent(data: any, sectionName: string): string {
+  // Look through all properties for mentions of the section
+  let content = "";
+  
+  // First try to find a direct property match
+  if (data[sectionName]) {
+    return data[sectionName];
+  }
+  
+  // Look for section in the text content
+  if (data.text || data.content || data.fullText) {
+    const textContent = data.text || data.content || data.fullText;
+    const regex = new RegExp(`${sectionName}[:\\s]+(.*?)(?=\\n\\n|\\n[A-Z]|$)`, 'i');
+    const match = textContent.match(regex);
+    if (match && match[1]) {
+      content = match[1].trim();
+    }
+  }
+  
+  // Default placeholder if not found
+  if (!content) {
+    const defaults: {[key: string]: string} = {
+      'foundation': "Standard concrete foundation per engineering specs",
+      'walls': "Brick masonry with cement mortar",
+      'flooring': "Ceramic tile flooring on cement base",
+      'roofing': "RCC slab with waterproofing"
+    };
+    content = defaults[sectionName] || "Standard construction specifications";
+  }
+  
+  return content;
 }

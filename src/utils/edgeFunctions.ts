@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Process specification document using OCR with Google Cloud Vision
+// Process specification document using OCR with OpenAI Vision
 export const processSpecification = async (fileUrl: string, fileName: string) => {
   try {
     console.log("Sending specification to OCR processing function:", fileName);
