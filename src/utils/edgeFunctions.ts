@@ -20,7 +20,6 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
       throw new Error(`OCR processing failed: ${error.message}`);
     }
     
-    // The response structure has changed, we need to handle it properly
     console.log("OCR processing response:", data);
     
     if (!data) {
@@ -33,7 +32,6 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
       throw new Error("OCR processing failed: No data returned");
     }
     
-    // Return the data directly without checking for success property
     return data;
   } catch (error) {
     console.error('Error in processSpecification:', error);
@@ -59,7 +57,6 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
       throw new Error(`Drawing analysis failed: ${error.message}`);
     }
     
-    // Log the response for debugging
     console.log("Drawing analysis response:", data);
     
     if (!data) {
@@ -72,7 +69,6 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
       throw new Error("Drawing analysis failed: No data returned");
     }
     
-    // Return the data directly without checking for success property
     return data;
   } catch (error) {
     console.error('Error in analyzeDrawing:', error);
@@ -87,8 +83,17 @@ export const generateBoq = async (ocrData: any, drawingData: any, projectName: s
     console.log("OCR Data:", ocrData);
     console.log("Drawing Data:", drawingData);
     
+    // Fix the data structure before passing to the edge function
+    // Extract just data object if it has a nested data property
+    const processedDrawingData = drawingData.data ? drawingData.data : drawingData;
+    const processedOcrData = ocrData;
+    
     const { data, error } = await supabase.functions.invoke('generate-boq', {
-      body: { ocrData, drawingData, projectName }
+      body: { 
+        ocrData: processedOcrData, 
+        drawingData: processedDrawingData, 
+        projectName 
+      }
     });
     
     if (error) {
@@ -101,7 +106,6 @@ export const generateBoq = async (ocrData: any, drawingData: any, projectName: s
       throw new Error(`BOQ generation failed: ${error.message}`);
     }
     
-    // Log the response for debugging
     console.log("BOQ generation response:", data);
     
     if (!data) {
