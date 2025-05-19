@@ -1,15 +1,12 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileUploader } from '@/components/FileUploader';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AIScanAnimation } from '@/components/AIScanAnimation';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Clipboard, Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { v4 as uuidv4 } from 'uuid';
+import { DrawingUploadTab } from './tabs/DrawingUploadTab';
+import { SpecificationUploadTab } from './tabs/SpecificationUploadTab';
+import { GenerateBoqTab } from './tabs/GenerateBoqTab';
+import { BoqSection } from '@/types/boq';
 
 export const TabInterface = () => {
   const [activeTab, setActiveTab] = useState('drawings');
@@ -25,7 +22,7 @@ export const TabInterface = () => {
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isBoqGenerated, setIsBoqGenerated] = useState(false);
-  const [generatedBoq, setGeneratedBoq] = useState<any[]>([]);
+  const [generatedBoq, setGeneratedBoq] = useState<BoqSection[]>([]);
   
   const handleDrawingFileChange = (file: File | null, fileUrl?: string, filePath?: string, fileType?: string) => {
     setDrawingFile(file);
@@ -203,12 +200,6 @@ export const TabInterface = () => {
     return numberValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
   
-  const totalSum = isBoqGenerated ? generatedBoq.reduce((acc, section) => {
-    return acc + section.items.reduce((sectionAcc, item) => {
-      return sectionAcc + parseFloat(item.total.replace(/,/g, ''));
-    }, 0);
-  }, 0) : 0;
-  
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-3 w-full mb-8">
@@ -224,114 +215,31 @@ export const TabInterface = () => {
       </TabsList>
       
       <TabsContent value="drawings" className="mt-4">
-        <Card className="p-6">
-          <h2 className="text-2xl font-medium text-gray-800 mb-4">Upload Architectural Drawings</h2>
-          <p className="text-gray-600 mb-6">Upload your architectural drawings in PDF or DWG format. Our AI will analyze the drawings to extract measurements and identify building elements.</p>
-          
-          <FileUploader onFileChange={handleDrawingFileChange} />
-          
-          {drawingFile && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-md">
-              <p className="font-medium">Uploaded Drawing: {drawingFile.name}</p>
-              <p className="text-sm text-gray-500">Our system will analyze this drawing to extract measurements and building elements.</p>
-            </div>
-          )}
-        </Card>
+        <DrawingUploadTab 
+          drawingFile={drawingFile}
+          onDrawingFileChange={handleDrawingFileChange}
+        />
       </TabsContent>
       
       <TabsContent value="specs" className="mt-4">
-        <Card className="p-6">
-          <h2 className="text-2xl font-medium text-gray-800 mb-4">Upload Specification Sheets</h2>
-          <p className="text-gray-600 mb-6">Upload specification documents to provide details about materials, quality standards, and construction requirements.</p>
-          
-          <FileUploader onFileChange={handleSpecFileChange} />
-          
-          {specFile && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-md">
-              <p className="font-medium">Uploaded Specification: {specFile.name}</p>
-              <p className="text-sm text-gray-500">Our system will extract material and quality specifications from this document.</p>
-            </div>
-          )}
-        </Card>
+        <SpecificationUploadTab
+          specFile={specFile}
+          onSpecFileChange={handleSpecFileChange}
+        />
       </TabsContent>
       
       <TabsContent value="generate" className="mt-4">
-        <Card className="p-6 relative">
-          <h2 className="text-2xl font-medium text-gray-800 mb-4">Generate Bill of Quantities</h2>
-          <p className="text-gray-600 mb-6">Generate a complete Bill of Quantities based on your uploaded drawings and specifications.</p>
-          
-          {!isBoqGenerated ? (
-            <div className="text-center">
-              <Button 
-                onClick={handleGenerateBoq} 
-                className="px-8 py-6 text-lg"
-                disabled={!drawingFile || !specFile || isProcessing}
-              >
-                {isProcessing ? "Processing..." : "Generate BOQ"}
-              </Button>
-              
-              {isProcessing && (
-                <div className="mt-6">
-                  <AIScanAnimation isScanning={isProcessing} />
-                  <p className="mt-4 text-gray-600">Analyzing drawings and specifications...</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <div className="flex justify-end gap-2 mb-4">
-                <Button variant="outline" onClick={handleExportPdf}>
-                  <Download className="h-4 w-4 mr-2" /> Export PDF
-                </Button>
-                <Button variant="outline" onClick={handleExportExcel}>
-                  <Clipboard className="h-4 w-4 mr-2" /> Export Excel
-                </Button>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">Ref</TableHead>
-                      <TableHead className="w-1/2">Item Description</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead>Rate</TableHead>
-                      <TableHead>Rate ref</TableHead>
-                      <TableHead>Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {generatedBoq.map((section, sectionIndex) => (
-                      <React.Fragment key={`section-${sectionIndex}`}>
-                        <TableRow className="bg-gray-100">
-                          <TableCell colSpan={7} className="font-bold">
-                            {section.section}
-                          </TableCell>
-                        </TableRow>
-                        {section.items.map((item, itemIndex) => (
-                          <TableRow key={`item-${sectionIndex}-${itemIndex}`}>
-                            <TableCell className="align-top">{item.ref}</TableCell>
-                            <TableCell className="whitespace-pre-line align-top">{item.description}</TableCell>
-                            <TableCell className="text-right align-top">{item.quantity}</TableCell>
-                            <TableCell className="align-top">{item.unit}</TableCell>
-                            <TableCell className="text-right align-top">{item.rate}</TableCell>
-                            <TableCell className="align-top">{item.rateRef}</TableCell>
-                            <TableCell className="text-right align-top">{item.total}</TableCell>
-                          </TableRow>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                    <TableRow className="font-bold">
-                      <TableCell colSpan={6} className="text-right">TOTAL:</TableCell>
-                      <TableCell className="text-right">{formatCurrency(totalSum.toString())}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          )}
-        </Card>
+        <GenerateBoqTab
+          drawingFile={drawingFile}
+          specFile={specFile}
+          isProcessing={isProcessing}
+          isBoqGenerated={isBoqGenerated}
+          generatedBoq={generatedBoq}
+          handleGenerateBoq={handleGenerateBoq}
+          handleExportPdf={handleExportPdf}
+          handleExportExcel={handleExportExcel}
+          formatCurrency={formatCurrency}
+        />
       </TabsContent>
     </Tabs>
   );
