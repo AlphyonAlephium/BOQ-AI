@@ -28,30 +28,70 @@ serve(async (req) => {
       throw new Error(`Failed to fetch file: ${fileResponse.statusText}`);
     }
     
-    // In a real implementation, we would use a service like Google Cloud Vision or Azure OCR
-    // For the MVP, we'll simulate OCR processing with a structured response
+    // Get the file data as blob
+    const fileBlob = await fileResponse.blob();
     
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Connect to Google Cloud Vision API for OCR processing
+    const apiKey = Deno.env.get('GOOGLE_CLOUD_API_KEY');
+    if (!apiKey) {
+      throw new Error('Google Cloud API key not configured');
+    }
     
-    // Mock extraction results
-    const extractedData = {
-      materials: [
-        { name: "Concrete", grade: "M25", description: "Ready mix concrete for foundation" },
-        { name: "Steel", grade: "Fe500", description: "TMT bars for reinforcement" },
-        { name: "Bricks", grade: "Class A", description: "Clay bricks for masonry work" },
-      ],
-      standards: [
-        { code: "IS 456:2000", description: "Plain and reinforced concrete - Code of practice" },
-        { code: "IS 800:2007", description: "General construction in steel - Code of practice" },
-      ],
-      specifications: {
-        foundation: "RCC foundation with M25 grade concrete",
-        walls: "230mm thick brick masonry with cement mortar (1:6)",
-        flooring: "Vitrified tiles of 600x600mm on cement mortar",
-        roofing: "RCC slab with waterproofing treatment",
-      }
+    // Convert blob to base64
+    const fileBuffer = await fileBlob.arrayBuffer();
+    const base64File = btoa(
+      new Uint8Array(fileBuffer).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ''
+      )
+    );
+    
+    // Prepare request for Google Cloud Vision API
+    const visionApiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+    const requestBody = {
+      requests: [
+        {
+          image: {
+            content: base64File
+          },
+          features: [
+            {
+              type: "DOCUMENT_TEXT_DETECTION",
+              maxResults: 50
+            }
+          ]
+        }
+      ]
     };
+    
+    // Make request to Google Cloud Vision
+    console.log("Sending request to Google Cloud Vision API");
+    const visionResponse = await fetch(visionApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!visionResponse.ok) {
+      const errorText = await visionResponse.text();
+      console.error("Vision API error response:", errorText);
+      throw new Error(`Google Cloud Vision API error: ${visionResponse.status} ${visionResponse.statusText}`);
+    }
+    
+    const visionResult = await visionResponse.json();
+    
+    if (!visionResult.responses || visionResult.responses.length === 0) {
+      throw new Error('No text detected in the document');
+    }
+    
+    const detectedText = visionResult.responses[0].fullTextAnnotation?.text || '';
+    console.log("OCR text extracted successfully, length:", detectedText.length);
+    
+    // Process the extracted text to identify materials, standards and specifications
+    // This section parses the raw OCR text into structured data
+    const extractedData = processExtractedText(detectedText);
     
     console.log("OCR processing completed successfully");
     
@@ -74,3 +114,100 @@ serve(async (req) => {
     });
   }
 });
+
+// Function to process and structure the extracted OCR text
+function processExtractedText(text: string) {
+  // Implementing simple pattern matching for construction document processing
+  // In a production environment, this would be more sophisticated with NLP or ML
+  
+  const materials: Array<{name: string; grade: string; description: string}> = [];
+  const standards: Array<{code: string; description: string}> = [];
+  const specifications: {[key: string]: string} = {};
+  
+  // Extract materials (looking for patterns like "Material: X, Grade: Y")
+  const materialMatches = text.match(/(?:Material|Materials):\s*(.*?)(?:\n|$)/gi) || [];
+  materialMatches.forEach(match => {
+    const materialName = match.replace(/(?:Material|Materials):\s*/i, '').trim();
+    const gradeMatch = text.match(new RegExp(`${materialName}.*?Grade:\\s*(.*?)(?:\\n|$)`, 'i'));
+    const descMatch = text.match(new RegExp(`${materialName}.*?Description:\\s*(.*?)(?:\\n|$)`, 'i'));
+    
+    materials.push({
+      name: materialName,
+      grade: gradeMatch ? gradeMatch[1].trim() : '',
+      description: descMatch ? descMatch[1].trim() : ''
+    });
+  });
+  
+  // Add default materials if none found (for fallback)
+  if (materials.length === 0) {
+    if (text.includes('concrete') || text.includes('Concrete')) {
+      materials.push({ name: "Concrete", grade: text.includes('M25') ? 'M25' : 'Standard', description: "Ready mix concrete" });
+    }
+    if (text.includes('steel') || text.includes('Steel')) {
+      materials.push({ name: "Steel", grade: text.includes('Fe500') ? 'Fe500' : 'Standard', description: "Reinforcement steel" });
+    }
+    if (text.includes('brick') || text.includes('Brick')) {
+      materials.push({ name: "Bricks", grade: "Class A", description: "Clay bricks for masonry work" });
+    }
+  }
+  
+  // Extract standards (looking for codes like "IS 456:2000" or "ASTM")
+  const standardMatches = text.match(/(?:IS|ASTM|BS|EN)\s*\d+(?:[-:]\d+)?/g) || [];
+  standardMatches.forEach(code => {
+    // Try to find a description following the standard code
+    const descMatch = text.match(new RegExp(`${code}\\s*[-–—]\\s*(.*?)(?:\\.|\\n|$)`));
+    standards.push({
+      code: code.trim(),
+      description: descMatch ? descMatch[1].trim() : "Construction standard"
+    });
+  });
+  
+  // Add default standards if none found (for fallback)
+  if (standards.length === 0) {
+    if (text.includes('concrete') || text.includes('Concrete')) {
+      standards.push({ code: "IS 456:2000", description: "Plain and reinforced concrete - Code of practice" });
+    }
+    if (text.includes('steel') || text.includes('Steel')) {
+      standards.push({ code: "IS 800:2007", description: "General construction in steel - Code of practice" });
+    }
+  }
+  
+  // Extract specifications for different building elements
+  const specSections = [
+    { key: 'foundation', patterns: ['foundation', 'Foundation', 'footing', 'Footing'] },
+    { key: 'walls', patterns: ['wall', 'Wall', 'masonry', 'Masonry'] },
+    { key: 'flooring', patterns: ['floor', 'Floor', 'Flooring', 'flooring'] },
+    { key: 'roofing', patterns: ['roof', 'Roof', 'ceiling', 'Ceiling'] }
+  ];
+  
+  specSections.forEach(section => {
+    for (const pattern of section.patterns) {
+      const matches = text.match(new RegExp(`${pattern}.*?(?:\\.|\\n)`, 'g'));
+      if (matches && matches.length > 0) {
+        // Use the longest match as it likely has more details
+        const bestMatch = matches.reduce((a, b) => a.length > b.length ? a : b);
+        specifications[section.key] = bestMatch.trim();
+        break;
+      }
+    }
+    
+    // If no match found for this section, add a placeholder based on text context
+    if (!specifications[section.key]) {
+      if (section.key === 'foundation' && (text.includes('RCC') || text.includes('concrete'))) {
+        specifications[section.key] = "RCC foundation with concrete";
+      } else if (section.key === 'walls' && text.includes('brick')) {
+        specifications[section.key] = "Brick masonry walls with cement mortar";
+      } else if (section.key === 'flooring' && text.includes('tile')) {
+        specifications[section.key] = "Tiled flooring";
+      } else if (section.key === 'roofing' && text.includes('RCC')) {
+        specifications[section.key] = "RCC slab roofing";
+      }
+    }
+  });
+  
+  return {
+    materials,
+    standards,
+    specifications
+  };
+}

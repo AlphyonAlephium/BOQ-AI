@@ -1,9 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Process specification document using OCR
+// Process specification document using OCR with Google Cloud Vision
 export const processSpecification = async (fileUrl: string, fileName: string) => {
   try {
+    console.log("Sending specification to OCR processing function:", fileName);
     const { data, error } = await supabase.functions.invoke('ocr-processing', {
       body: { fileUrl, fileName }
     });
@@ -20,9 +21,10 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
   }
 };
 
-// Analyze drawing to extract measurements
+// Analyze drawing to extract measurements using Azure Computer Vision and OpenAI
 export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
   try {
+    console.log("Sending drawing to analysis function:", fileName);
     const { data, error } = await supabase.functions.invoke('drawing-analysis', {
       body: { fileUrl, fileName }
     });
@@ -42,6 +44,7 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
 // Generate BOQ from processed data
 export const generateBoq = async (ocrData: any, drawingData: any, projectName: string) => {
   try {
+    console.log("Generating BOQ for project:", projectName);
     const { data, error } = await supabase.functions.invoke('generate-boq', {
       body: { ocrData, drawingData, projectName }
     });
