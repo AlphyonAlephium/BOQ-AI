@@ -21,7 +21,7 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
   }
 };
 
-// Analyze drawing to extract measurements using Azure Computer Vision and OpenAI
+// Analyze drawing to extract measurements using OpenAI Vision
 export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
   try {
     console.log("Sending drawing to analysis function:", fileName);

@@ -31,18 +31,7 @@ serve(async (req) => {
     // Get the file data as blob
     const fileBlob = await fileResponse.blob();
     
-    // Connect to Azure Computer Vision API for drawing analysis
-    const visionApiKey = Deno.env.get('AZURE_VISION_API_KEY');
-    const visionEndpoint = Deno.env.get('AZURE_VISION_ENDPOINT');
-    
-    if (!visionApiKey || !visionEndpoint) {
-      throw new Error('Azure Vision API configuration not found');
-    }
-    
-    // First, analyze the image to detect objects and dimensions
-    console.log("Sending request to Azure Computer Vision API");
-    
-    // Convert blob to base64 for OpenAI Vision API (as an alternative approach)
+    // Convert blob to base64 for OpenAI Vision API
     const fileBuffer = await fileBlob.arrayBuffer();
     const base64File = btoa(
       new Uint8Array(fileBuffer).reduce(
@@ -117,8 +106,6 @@ serve(async (req) => {
     }
     
     // Process and structure the results
-    // If the AI didn't provide structured data in the requested format,
-    // we'll transform it into our expected format
     const extractedData = processAnalysisResult(analysisResult);
     
     console.log("Drawing analysis completed successfully");
@@ -146,8 +133,6 @@ serve(async (req) => {
 // Function to process and structure the analysis results from vision API
 function processAnalysisResult(analysisData: any) {
   // This function transforms the AI's response into our expected format
-  // If the AI already returned data in the expected format, we'll use that directly
-  
   // Create a default structure
   const result = {
     dimensions: {
