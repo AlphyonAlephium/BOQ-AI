@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 // Process specification document using OCR with OpenAI Vision
 export const processSpecification = async (fileUrl: string, fileName: string) => {
@@ -11,10 +12,25 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
     
     if (error) {
       console.error('OCR processing error:', error);
+      toast({
+        title: "OCR Processing Error",
+        description: `Error processing document: ${error.message}`,
+        variant: "destructive"
+      });
       throw new Error(`OCR processing failed: ${error.message}`);
     }
     
-    return data;
+    if (data && !data.success) {
+      console.error('OCR processing failed:', data.error);
+      toast({
+        title: "OCR Processing Failed",
+        description: data.error || "Failed to extract text from document",
+        variant: "destructive"
+      });
+      throw new Error(`OCR processing failed: ${data.error}`);
+    }
+    
+    return data.data;
   } catch (error) {
     console.error('Error in processSpecification:', error);
     throw error;
@@ -31,10 +47,25 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
     
     if (error) {
       console.error('Drawing analysis error:', error);
+      toast({
+        title: "Drawing Analysis Error",
+        description: `Error analyzing drawing: ${error.message}`,
+        variant: "destructive"
+      });
       throw new Error(`Drawing analysis failed: ${error.message}`);
     }
     
-    return data;
+    if (data && !data.success) {
+      console.error('Drawing analysis failed:', data.error);
+      toast({
+        title: "Drawing Analysis Failed",
+        description: data.error || "Failed to analyze drawing",
+        variant: "destructive"
+      });
+      throw new Error(`Drawing analysis failed: ${data.error}`);
+    }
+    
+    return data.data;
   } catch (error) {
     console.error('Error in analyzeDrawing:', error);
     throw error;
@@ -51,7 +82,22 @@ export const generateBoq = async (ocrData: any, drawingData: any, projectName: s
     
     if (error) {
       console.error('BOQ generation error:', error);
+      toast({
+        title: "BOQ Generation Error",
+        description: `Error generating BOQ: ${error.message}`,
+        variant: "destructive"
+      });
       throw new Error(`BOQ generation failed: ${error.message}`);
+    }
+    
+    if (data && !data.success) {
+      console.error('BOQ generation failed:', data.error);
+      toast({
+        title: "BOQ Generation Failed",
+        description: data.error || "Failed to generate BOQ",
+        variant: "destructive"
+      });
+      throw new Error(`BOQ generation failed: ${data.error}`);
     }
     
     return data;
