@@ -17,6 +17,9 @@ export type Database = {
           file_url: string
           id: string
           name: string
+          spec_path: string | null
+          spec_type: string | null
+          spec_url: string | null
           type: string
         }
         Insert: {
@@ -26,6 +29,9 @@ export type Database = {
           file_url: string
           id?: string
           name: string
+          spec_path?: string | null
+          spec_type?: string | null
+          spec_url?: string | null
           type: string
         }
         Update: {
@@ -35,6 +41,9 @@ export type Database = {
           file_url?: string
           id?: string
           name?: string
+          spec_path?: string | null
+          spec_type?: string | null
+          spec_url?: string | null
           type?: string
         }
         Relationships: []
