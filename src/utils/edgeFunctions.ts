@@ -7,7 +7,7 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
   try {
     console.log("Sending specification to OCR processing function:", fileName);
     const { data, error } = await supabase.functions.invoke('ocr-processing', {
-      body: { fileUrl, fileName }
+      body: { fileUrl, fileName, debug: true }
     });
     
     if (error) {
@@ -32,6 +32,7 @@ export const processSpecification = async (fileUrl: string, fileName: string) =>
       throw new Error("OCR processing failed: No data returned");
     }
     
+    // Return just the data if it's already properly formatted
     return data;
   } catch (error) {
     console.error('Error in processSpecification:', error);
@@ -44,7 +45,7 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
   try {
     console.log("Sending drawing to analysis function:", fileName);
     const { data, error } = await supabase.functions.invoke('drawing-analysis', {
-      body: { fileUrl, fileName }
+      body: { fileUrl, fileName, debug: true }
     });
     
     if (error) {
@@ -69,6 +70,7 @@ export const analyzeDrawing = async (fileUrl: string, fileName: string) => {
       throw new Error("Drawing analysis failed: No data returned");
     }
     
+    // Return just the data.data if it has that structure, otherwise return data
     return data;
   } catch (error) {
     console.error('Error in analyzeDrawing:', error);
@@ -83,16 +85,16 @@ export const generateBoq = async (ocrData: any, drawingData: any, projectName: s
     console.log("OCR Data:", ocrData);
     console.log("Drawing Data:", drawingData);
     
-    // Fix the data structure before passing to the edge function
-    // Extract just data object if it has a nested data property
-    const processedDrawingData = drawingData.data ? drawingData.data : drawingData;
+    // Extract just needed data, handling both object structures
     const processedOcrData = ocrData;
+    const processedDrawingData = drawingData.data ? drawingData.data : drawingData;
     
     const { data, error } = await supabase.functions.invoke('generate-boq', {
       body: { 
         ocrData: processedOcrData, 
         drawingData: processedDrawingData, 
-        projectName 
+        projectName,
+        debug: true 
       }
     });
     

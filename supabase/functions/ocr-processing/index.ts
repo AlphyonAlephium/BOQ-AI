@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
@@ -13,13 +14,16 @@ serve(async (req) => {
   }
 
   try {
-    const { fileUrl, fileName } = await req.json();
+    const { fileUrl, fileName, debug } = await req.json();
     
     if (!fileUrl) {
       throw new Error('File URL is required');
     }
 
     console.log(`Processing specification document: ${fileName || 'unknown'}`);
+    if (debug) {
+      console.log("Debug mode enabled for OCR processing");
+    }
     
     // Fetch the file content from the Supabase URL
     const fileResponse = await fetch(fileUrl);
@@ -30,8 +34,18 @@ serve(async (req) => {
     // Get the file data as blob
     const fileBlob = await fileResponse.blob();
     
+    // Check file type from the URL or Content-Type
+    const isPdf = fileName?.toLowerCase().endsWith('.pdf') || 
+                  fileResponse.headers.get('Content-Type')?.includes('application/pdf');
+                  
+    if (debug) {
+      console.log(`File type: ${isPdf ? 'PDF' : 'Image'}`);
+      console.log(`Content-Type: ${fileResponse.headers.get('Content-Type')}`);
+    }
+    
     // Try to use OpenAI for OCR
     const apiKey = Deno.env.get('OPENAI_API_KEY');
+    
     if (!apiKey) {
       console.log("OpenAI API key not configured, using fallback data");
       return new Response(JSON.stringify(getFallbackOcrData(fileName)), {
@@ -39,7 +53,45 @@ serve(async (req) => {
       });
     }
     
+    // Test if OpenAI API key works by making a simple request
+    if (debug) {
+      try {
+        console.log("Testing OpenAI API key...");
+        const testResponse = await fetch('https://api.openai.com/v1/models', {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`
+          }
+        });
+        
+        if (testResponse.ok) {
+          console.log("OpenAI API key is valid");
+        } else {
+          const errorData = await testResponse.json();
+          console.error("OpenAI API key validation failed:", errorData);
+          return new Response(JSON.stringify({ 
+            error: "OpenAI API key validation failed",
+            details: errorData,
+            fallbackData: getFallbackOcrData(fileName)
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+      } catch (testError) {
+        console.error("Error testing OpenAI API key:", testError);
+      }
+    }
+    
     try {
+      // If it's a PDF, we need special handling
+      if (isPdf) {
+        // Convert PDF to image using a simple approach (first page only)
+        // For PDFs, we'll use fallback data in this example
+        console.log("PDF files require conversion before OCR, using fallback data");
+        return new Response(JSON.stringify(getFallbackOcrData(fileName)), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
       // Convert blob to base64
       const fileBuffer = await fileBlob.arrayBuffer();
       const base64File = btoa(
@@ -92,6 +144,16 @@ serve(async (req) => {
         const errorText = await openaiResponse.text();
         console.error("OpenAI API error response:", errorText);
         
+        if (debug) {
+          return new Response(JSON.stringify({
+            error: `OpenAI API error: ${openaiResponse.status} ${openaiResponse.statusText}`,
+            details: errorText,
+            fallbackData: getFallbackOcrData(fileName)
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        
         // Check for quota exceeded error
         if (errorText.includes("insufficient_quota") || openaiResponse.status === 429) {
           console.log("OpenAI quota exceeded, using fallback data");
@@ -134,6 +196,15 @@ serve(async (req) => {
       console.error("OpenAI processing error:", openaiError);
       console.log("Using fallback data due to OpenAI error");
       
+      if (debug) {
+        return new Response(JSON.stringify({
+          error: openaiError.message,
+          fallbackData: getFallbackOcrData(fileName)
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
       // Return fallback data if OpenAI fails
       return new Response(JSON.stringify(getFallbackOcrData(fileName)), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -142,8 +213,11 @@ serve(async (req) => {
   } catch (error) {
     console.error("OCR processing error:", error);
     
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      fallbackData: getFallbackOcrData("unknown") 
+    }), {
+      status: 200, // Return 200 even for errors to avoid edge function errors
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }

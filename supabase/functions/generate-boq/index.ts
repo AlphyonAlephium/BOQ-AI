@@ -14,22 +14,64 @@ serve(async (req) => {
   }
 
   try {
-    const { ocrData, drawingData, projectName } = await req.json();
+    const { ocrData, drawingData, projectName, debug } = await req.json();
     
     if (!ocrData || !drawingData) {
       throw new Error('OCR data and drawing data are required');
     }
 
     console.log(`Generating BOQ for project: ${projectName}`);
+    if (debug) {
+      console.log("Debug mode enabled for BOQ generation");
+      console.log("OCR Data:", JSON.stringify(ocrData).substring(0, 500) + "...");
+      console.log("Drawing Data:", JSON.stringify(drawingData).substring(0, 500) + "...");
+    }
     
     // Ensure the data structure is correct
-    const dimensions = drawingData.dimensions || (drawingData.data && drawingData.data.dimensions);
-    const elements = drawingData.elements || (drawingData.data && drawingData.data.elements);
-    const rooms = drawingData.rooms || (drawingData.data && drawingData.data.rooms);
+    let dimensions, elements, rooms;
+    
+    if (drawingData.dimensions) {
+      dimensions = drawingData.dimensions;
+      elements = drawingData.elements;
+      rooms = drawingData.rooms;
+    } else if (drawingData.data && drawingData.data.dimensions) {
+      dimensions = drawingData.data.dimensions;
+      elements = drawingData.data.elements;
+      rooms = drawingData.data.rooms;
+    } else {
+      console.error("Invalid drawing data structure, using fallback data");
+      if (debug) {
+        return new Response(
+          JSON.stringify({
+            error: "Invalid drawing data structure",
+            details: { drawingData },
+            boq: getFallbackBoqData(projectName, ocrData).boq
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Return fallback BOQ data
+      return new Response(
+        JSON.stringify(getFallbackBoqData(projectName, ocrData)),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     // Check if we have the required data
     if (!dimensions || !dimensions.buildingFootprint) {
-      console.error("Invalid drawing data structure, using fallback data");
+      console.error("Missing required drawing data (buildingFootprint), using fallback data");
+      if (debug) {
+        return new Response(
+          JSON.stringify({
+            error: "Missing required drawing data (buildingFootprint)",
+            details: { dimensions },
+            boq: getFallbackBoqData(projectName, ocrData).boq
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       // Return fallback BOQ data
       return new Response(
         JSON.stringify(getFallbackBoqData(projectName, ocrData)),
@@ -41,11 +83,47 @@ serve(async (req) => {
     // Try to use OpenAI if API key is available
     const openAIKey = Deno.env.get("OPENAI_API_KEY");
     
-    if (openAIKey) {
+    if (!openAIKey) {
+      console.log("OpenAI API key not available, using fallback BOQ data");
+      return new Response(
+        JSON.stringify(getFallbackBoqData(projectName, ocrData)),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Test if OpenAI API key works
+    if (debug) {
       try {
-        // Prepare the prompt for OpenAI
-        const prompt = `Generate a detailed bill of quantities (BOQ) for a building project with the following specifications:
+        console.log("Testing OpenAI API key...");
+        const testResponse = await fetch('https://api.openai.com/v1/models', {
+          headers: {
+            'Authorization': `Bearer ${openAIKey}`
+          }
+        });
         
+        if (testResponse.ok) {
+          console.log("OpenAI API key is valid");
+        } else {
+          const errorData = await testResponse.json();
+          console.error("OpenAI API key validation failed:", errorData);
+          return new Response(
+            JSON.stringify({
+              error: "OpenAI API key validation failed",
+              details: errorData,
+              boq: getFallbackBoqData(projectName, ocrData).boq
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (testError) {
+        console.error("Error testing OpenAI API key:", testError);
+      }
+    }
+    
+    try {
+      // Prepare the prompt for OpenAI
+      const prompt = `Generate a detailed bill of quantities (BOQ) for a building project with the following specifications:
+      
 Project: ${projectName}
 
 Building Dimensions:
@@ -58,10 +136,10 @@ Building Elements:
 ${elements.map(elem => `- ${elem.type}: ${elem.area || elem.length || elem.count || 'N/A'} ${elem.unit || ''}`).join('\n')}
 
 Materials:
-${ocrData.materials.map(m => `- ${m.name} (${m.grade}): ${m.description}`).join('\n')}
+${ocrData.materials ? ocrData.materials.map(m => `- ${m.name} (${m.grade}): ${m.description}`).join('\n') : 'Standard materials'}
 
 Specifications:
-${Object.entries(ocrData.specifications).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+${ocrData.specifications ? Object.entries(ocrData.specifications).map(([key, value]) => `- ${key}: ${value}`).join('\n') : 'Standard specifications'}
 
 Create a detailed bill of quantities with the following sections:
 1. Earthwork and Foundation
@@ -82,79 +160,134 @@ For each section, include:
 
 Format as a structured JSON array of sections, where each section has items with ref, description, quantity, unit, rate, rateRef, and total fields.`;
 
-        // Call OpenAI
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openAIKey}`
-          },
-          body: JSON.stringify({
-            model: "gpt-4o",
-            messages: [
-              { 
-                role: "system", 
-                content: "You are a construction estimator that creates detailed BOQs. Provide only JSON formatted response." 
-              },
-              { 
-                role: "user", 
-                content: prompt 
-              }
-            ],
-            temperature: 0.7,
-            response_format: { type: "json_object" }
-          })
-        });
+      // Call OpenAI
+      console.log("Calling OpenAI to generate BOQ...");
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openAIKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            { 
+              role: "system", 
+              content: "You are a construction estimator that creates detailed BOQs. Provide only JSON formatted response." 
+            },
+            { 
+              role: "user", 
+              content: prompt 
+            }
+          ],
+          temperature: 0.7,
+          response_format: { type: "json_object" }
+        })
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("OpenAI API error:", errorText);
         
-        if (!response.ok) {
-          // If the OpenAI call fails, fall back to generated data
-          console.error("OpenAI API error, using fallback data");
+        if (debug) {
+          return new Response(
+            JSON.stringify({
+              error: `OpenAI API error: ${response.status} ${response.statusText}`,
+              details: errorText,
+              boq: getFallbackBoqData(projectName, ocrData).boq
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        console.error("OpenAI API error, using fallback data");
+        return new Response(
+          JSON.stringify(getFallbackBoqData(projectName, ocrData)),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const openAIResult = await response.json();
+      if (debug) {
+        console.log("OpenAI response received");
+      }
+      
+      const content = openAIResult.choices[0].message.content;
+      
+      // Parse the JSON response from OpenAI
+      let boqData;
+      try {
+        boqData = JSON.parse(content);
+        
+        if (debug) {
+          console.log("Successfully parsed OpenAI response as JSON");
+        }
+        
+        // If the structure doesn't match what we expect, use the fallback
+        if (!boqData.boq && !Array.isArray(boqData)) {
+          console.error("Invalid BOQ structure from OpenAI, using fallback data");
+          if (debug) {
+            return new Response(
+              JSON.stringify({
+                error: "Invalid BOQ structure from OpenAI",
+                openAIResponse: boqData,
+                boq: getFallbackBoqData(projectName, ocrData).boq
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
           return new Response(
             JSON.stringify(getFallbackBoqData(projectName, ocrData)),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
-        const openAIResult = await response.json();
-        const content = openAIResult.choices[0].message.content;
+        // Ensure proper structure
+        if (Array.isArray(boqData)) {
+          boqData = { boq: boqData };
+        } else if (boqData.sections) {
+          boqData = { boq: boqData.sections };
+        }
         
-        // Parse the JSON response from OpenAI
-        let boqData;
-        try {
-          boqData = JSON.parse(content);
-          
-          // If the structure doesn't match what we expect, use the fallback
-          if (!boqData.boq && !Array.isArray(boqData)) {
-            console.error("Invalid BOQ structure from OpenAI, using fallback data");
-            return new Response(
-              JSON.stringify(getFallbackBoqData(projectName, ocrData)),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-          
-          // Ensure proper structure
-          if (Array.isArray(boqData)) {
-            boqData = { boq: boqData };
-          } else if (boqData.sections) {
-            boqData = { boq: boqData.sections };
-          }
-          
-        } catch (e) {
-          console.error("Error parsing OpenAI response:", e);
+      } catch (e) {
+        console.error("Error parsing OpenAI response:", e);
+        if (debug) {
           return new Response(
-            JSON.stringify(getFallbackBoqData(projectName, ocrData)),
+            JSON.stringify({
+              error: "Failed to parse OpenAI response",
+              openAIResponseContent: content,
+              boq: getFallbackBoqData(projectName, ocrData).boq
+            }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
         return new Response(
-          JSON.stringify(boqData),
+          JSON.stringify(getFallbackBoqData(projectName, ocrData)),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
-        
-      } catch (openaiError) {
-        console.error("OpenAI processing error:", openaiError);
-        console.log("Using fallback BOQ data");
+      }
+      
+      console.log("BOQ generation complete");
+      
+      return new Response(
+        JSON.stringify(boqData),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+      
+    } catch (openaiError) {
+      console.error("OpenAI processing error:", openaiError);
+      console.log("Using fallback BOQ data");
+      
+      if (debug) {
+        return new Response(
+          JSON.stringify({
+            error: openaiError.message,
+            boq: getFallbackBoqData(projectName, ocrData).boq
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
     }
     
@@ -171,7 +304,7 @@ Format as a structured JSON array of sections, where each section has items with
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        boq: getFallbackBoqData(projectName, { specifications: {} }).boq 
+        boq: getFallbackBoqData("Unknown Project", { specifications: {} }).boq 
       }),
       { 
         status: 200, // Use 200 even for errors so frontend can handle it
